@@ -8,9 +8,14 @@ import javafx.scene.Scene;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
+import model.Model;
 
 public class View extends Application {
+
+    private Hearts game;
+    private Model model;
 
     private BorderPane rootPane;
 
@@ -22,6 +27,8 @@ public class View extends Application {
     @Override
     public void start(Stage stage)
     {
+        game = new Hearts(this);
+
         rootPane = new BorderPane();
         initRootPane();
 
@@ -29,6 +36,8 @@ public class View extends Application {
         stage.setScene(new Scene(rootPane));
         stage.setResizable(false);
         stage.show();
+
+        game.startGame();
 
         update();
     }
@@ -47,6 +56,8 @@ public class View extends Application {
 
         initHorizontalHand(p1Cards, Pos.BOTTOM_CENTER);
         initHorizontalHand(p3Cards, Pos.TOP_CENTER);
+        initVerticalHand(p2Cards, Pos.CENTER_LEFT);
+        initVerticalHand(p4Cards, Pos.CENTER_RIGHT);
     }
 
     private void initHorizontalHand(CardLabel[] hand, Pos pos)
@@ -70,6 +81,35 @@ public class View extends Application {
             rootPane.setTop(pane);
         } else {
             rootPane.setBottom(pane);
+        }
+    }
+
+    private void initVerticalHand(CardLabel[] hand, Pos pos)
+    {
+        VBox leftPane = new VBox();
+        VBox middlePane = new VBox();
+        VBox rightPane = new VBox();
+
+        for (int i = 0; i < hand.length; ++i) {
+            hand[i] = new CardLabel();
+            hand[i].setGraphic(new ImageView(Images.BACK));
+            hand[i].setOnMouseClicked(e -> {
+                CardLabel card = (CardLabel) e.getSource();
+                System.out.println("Clicked on card " + card);
+            });
+        }
+
+        leftPane.getChildren().addAll(hand[0], hand[1], hand[2], hand[3]);
+        middlePane.getChildren().addAll(hand[4], hand[5], hand[6], hand[7], hand[8]);
+        rightPane.getChildren().addAll(hand[9], hand[10], hand[11], hand[12]);
+
+        HBox handPane = new HBox();
+        handPane.getChildren().addAll(leftPane, middlePane, rightPane);
+
+        if (pos == Pos.CENTER_LEFT) {
+            rootPane.setLeft(handPane);
+        } else {
+            rootPane.setRight(handPane);
         }
     }
 

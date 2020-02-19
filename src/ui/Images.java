@@ -14,6 +14,7 @@ public class Images {
 
     static {
         BACK = readImage("back.png");
+//        BACK = readImage("JS.png");
     }
 
     private static Image readImage(String filename)
