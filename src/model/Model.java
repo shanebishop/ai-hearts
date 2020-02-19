@@ -27,6 +27,18 @@ public class Model {
     public int getP3HandSize() { return p3Hand.size(); }
     public int getP4HandSize() { return p4Hand.size(); }
 
+    public int getSuit(int handNum, int index)
+    {
+        Card c = hands.get(handNum).get(index);
+        return c == null ? -1 : c.getSuit();
+    }
+
+    public int getValue(int handNum, int index)
+    {
+        Card c = hands.get(handNum).get(index);
+        return c == null ? -1 : c.getValue();
+    }
+
     private void dealCards()
     {
         // Reset hands
@@ -40,8 +52,8 @@ public class Model {
         final int numPlayers = 4;
 
         List<Card> allCards = new ArrayList<>(numCards);
-        for (int val = 1; val <= Hearts.CARDS_PER_PLAYER; ++val) {
-            for (int s = 1; s <= numPlayers; ++s) {
+        for (int val = 2; val <= Hearts.CARDS_PER_PLAYER+1; ++val) {  // Values start at 2
+            for (int s = 0; s < numPlayers; ++s) {                    // Suites start at 0
                 allCards.add(new Card(s, val));
             }
         }
@@ -49,7 +61,7 @@ public class Model {
 
         for (int i = 0; i < Hearts.CARDS_PER_PLAYER; ++i) {
             for (int j = 0; j < numPlayers; ++j) {
-                hands.get(j).add(allCards.get(i));
+                hands.get(j).add(allCards.get(i*numPlayers+j));
             }
         }
     }

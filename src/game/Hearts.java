@@ -13,6 +13,8 @@ public class Hearts {
     public Hearts(View v)
     {
         view = v;
+        model = new Model();
+        view.setModel(model);
     }
 
     public void startGame()

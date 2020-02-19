@@ -17,7 +17,7 @@ public class Images {
 //        BACK = readImage("JS.png");
     }
 
-    private static Image readImage(String filename)
+    public static Image readImage(String filename)
     {
         try {
             FileInputStream stream = new FileInputStream(String.format("%s%s", RESOURCES_PATH, filename));
