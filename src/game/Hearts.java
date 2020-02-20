@@ -9,6 +9,7 @@ public class Hearts {
     private Model model;
 
     public static int CARDS_PER_PLAYER = 13;
+    public static int NUM_PLAYERS = 4;
 
     public Hearts(View v)
     {
@@ -20,6 +21,17 @@ public class Hearts {
     public void startGame()
     {
         // TODO Implement me
+    }
+
+    public void handleCardClicked(int playerID, int index)
+    {
+        if (playerID != model.getActivePlayer() || !model.cardAtIndex(playerID, index)) {
+            return;
+        }
+
+        model.setPlayed(playerID, index);
+        model.nextPlayer();
+        view.update();
     }
 
 }

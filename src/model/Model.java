@@ -12,10 +12,17 @@ public class Model {
     private List<List<Card>> hands;
     private List<Card> p1Hand, p2Hand, p3Hand, p4Hand;
 
+    private int activePlayer;
+
+    private Card[] played;
+
     public Model()
     {
+        played = new Card[Hearts.NUM_PLAYERS];
         dealCards();
     }
+
+    public int getActivePlayer() { return activePlayer; }
 
     public List<Card> getP1Hand() { return p1Hand; }
     public List<Card> getP2Hand() { return p2Hand; }
@@ -29,14 +36,35 @@ public class Model {
 
     public int getSuit(int handNum, int index)
     {
-        Card c = hands.get(handNum).get(index);
-        return c == null ? -1 : c.getSuit();
+        List<Card> hand = hands.get(handNum);
+        return index < hand.size() ? hand.get(index).getSuit() : -1;
     }
 
     public int getValue(int handNum, int index)
     {
-        Card c = hands.get(handNum).get(index);
-        return c == null ? -1 : c.getValue();
+        List<Card> hand = hands.get(handNum);
+        return index < hand.size() ? hand.get(index).getValue() : -1;
+    }
+
+    public boolean cardAtIndex(int playerID, int index)
+    {
+        return index < hands.get(playerID).size();
+    }
+
+    public void setPlayed(int playerID, int index)
+    {
+        played[playerID] = hands.get(playerID).remove(index);
+    }
+
+    public Card getPlayedCard(int index) { return played[index]; }
+
+    public void nextPlayer()
+    {
+        ++activePlayer;
+        if (activePlayer == 4) {
+            activePlayer = 0;
+        }
+        System.out.printf("Player %d's turn.\n", activePlayer+1);
     }
 
     private void dealCards()
@@ -48,8 +76,8 @@ public class Model {
         p4Hand = new ArrayList<>(Hearts.CARDS_PER_PLAYER);
         hands = Arrays.asList(p1Hand, p2Hand, p3Hand, p4Hand);
 
-        final int numCards = 4*Hearts.CARDS_PER_PLAYER;
-        final int numPlayers = 4;
+        final int numPlayers = Hearts.NUM_PLAYERS;
+        final int numCards = numPlayers * Hearts.CARDS_PER_PLAYER;
 
         List<Card> allCards = new ArrayList<>(numCards);
         for (int val = 2; val <= Hearts.CARDS_PER_PLAYER+1; ++val) {  // Values start at 2

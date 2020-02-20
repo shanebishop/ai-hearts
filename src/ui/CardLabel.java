@@ -7,15 +7,17 @@ import javafx.scene.layout.BorderStroke;
 import javafx.scene.layout.BorderStrokeStyle;
 import javafx.scene.layout.BorderWidths;
 import javafx.scene.paint.Color;
+import model.Card;
 
 public class CardLabel extends Label {
 
-    private static final int WIDTH = 72;
-    private static final int HEIGHT = 96;
+    public static final int WIDTH = 72, HEIGHT = 96;
 
-    private int suite, value; // Cached suite and value to avoid update if not necessary
+    private int suit, value; // Cached suit and value to avoid update if not necessary
 
-    // Index into this like images[suite][value]
+    private int playerID;
+
+    // Index into this like images[suit][value]
     // Initial nulls is because lowest value is 2 (skip 0 and 1)
     private static final String[][] images = {
             {null, null, "2C.png", "3C.png", "4C.png", "5C.png", "6C.png", "7C.png", "8C.png", "9C.png", "10C.png", "JC.png", "QC.png", "KC.png", "AC.png"},
@@ -26,30 +28,42 @@ public class CardLabel extends Label {
 
     private int index; // 0-based index of card in player's hand
 
-    public CardLabel()
+    public CardLabel(int pID, int ind)
     {
+        playerID = pID;
+        index = ind;
+
         setMinSize(WIDTH, HEIGHT);
         setMaxSize(WIDTH, HEIGHT);
         setPrefSize(WIDTH, HEIGHT);
     }
 
-    public void setIndex(int i) { index = i; }
     public int getIndex() { return index; }
 
     public void setImage(int s, int v)
     {
-        if (s == suite && v == value) {
+        if (s == suit && v == value) {
             return; // Avoid changing anything
         }
 
-        suite = s;
+        suit = s;
         value = v;
 
-        if (suite == -1) {
+        if (suit == -1) {
             setGraphic(null); // Remove image
+            return;
         }
 
-        setGraphic(new ImageView(Images.readImage(images[suite][value])));
+        setGraphic(new ImageView(Images.readImage(images[suit][value])));
+    }
+
+    public static void setImage(Label lbl, Card card)
+    {
+        if (card == null) {
+            lbl.setGraphic(null);
+            return;
+        }
+        lbl.setGraphic(new ImageView(Images.readImage(images[card.getSuit()][card.getValue()])));
     }
 
     private void setBorderColor(Color c)
