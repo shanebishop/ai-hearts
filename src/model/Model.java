@@ -2,16 +2,15 @@ package model;
 
 import game.Hearts;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
 public class Model {
 
     private List<List<Card>> hands;
     private List<Card> p1Hand, p2Hand, p3Hand, p4Hand;
     private int[] playerScores;
+
+    private Map<Integer, int[]> oldPlayerScores; // Map of round number to list of player scores
 
     private int activePlayer, trickNumber, roundNum;
 
@@ -25,11 +24,13 @@ public class Model {
         led = null;
         played = new Card[Hearts.NUM_PLAYERS];
         playerScores = new int[Hearts.NUM_PLAYERS]; // In Java, values default to 0
+        oldPlayerScores = new HashMap<>();
 
         dealCards();
     }
 
     public int getActivePlayer() { return activePlayer; }
+    public int getRoundNum() { return roundNum; }
 
     public List<Card> getP1Hand() { return p1Hand; }
     public List<Card> getP2Hand() { return p2Hand; }
@@ -61,6 +62,9 @@ public class Model {
     public void setPlayed(int playerID, int index)
     {
         played[playerID] = hands.get(playerID).remove(index);
+        if (led == null) {
+            led = played[playerID];
+        }
     }
 
     public Card getPlayedCard(int index) { return played[index]; }
@@ -88,13 +92,14 @@ public class Model {
     public boolean endTrick()
     {
         final boolean roundOver = trickNumber == Hearts.CARDS_PER_PLAYER;
+        final int oldTrickNum = trickNumber;
         trickNumber = roundOver ? 1 : trickNumber + 1;
 
         // Determine winner
         activePlayer = determineTrickWinner();
 
         // Add to the points to the player that won this trick
-        scoreTrick(activePlayer);
+        scoreTrick(activePlayer, oldTrickNum);
 
         // Reset cards
         for (int i = 0; i < played.length; ++i) {
@@ -103,15 +108,21 @@ public class Model {
         led = null;
 
         if (roundOver) {
+            updateOldScores(roundNum);
             ++roundNum;
             dealCards();
             activePlayer = 1; // Choose arbitrary player to be first player for card trading
         }
 
+        // Clear this round's scores
+        for (int i = 0; i < playerScores.length; ++i) {
+            playerScores[i] = 0;
+        }
+
         return roundOver;
     }
 
-    private void scoreTrick(int playerID)
+    private void scoreTrick(int playerID, int trickNumber)
     {
         int score = 0;
         for (Card c : played) {
@@ -123,6 +134,10 @@ public class Model {
         }
 
         playerScores[playerID] += score;
+
+        System.out.printf("Player %d won trick %d, earning %d point%s. ",
+                playerID+1, trickNumber, score, score == 1 ? "" : "s");
+        System.out.printf("Player %d's score is now %d.\n", playerID+1, playerScores[playerID]);
     }
 
     private int determineTrickWinner()
@@ -146,10 +161,20 @@ public class Model {
     public void nextPlayer()
     {
         ++activePlayer;
-        if (activePlayer == 4) {
+        if (activePlayer == Hearts.NUM_PLAYERS) {
             activePlayer = 0;
         }
-        System.out.printf("Player %d's turn.\n", activePlayer+1);
+    }
+
+    private void updateOldScores(int roundNumber)
+    {
+        // Clone the array
+        int[] scoresClone = new int[playerScores.length];
+        for (int i = 0; i < playerScores.length; ++i) {
+            scoresClone[i] = playerScores[i];
+        }
+
+        oldPlayerScores.put(roundNumber, scoresClone);
     }
 
     private void dealCards()

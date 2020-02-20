@@ -24,6 +24,7 @@ public class View extends Application {
 
     private CardLabel[] p1Cards, p2Cards, p3Cards, p4Cards;
     private Label[] centerCards;
+    private Label turnLabel;
 
     public static void main(String[] args)
     {
@@ -52,6 +53,8 @@ public class View extends Application {
 
     public void update()
     {
+        turnLabel.setText(String.format("Player %d's turn", model.getActivePlayer()+1));
+
         for (int i = 0; i < centerCards.length; ++i) {
             Card c = model.getPlayedCard(i);
             CardLabel.setImage(centerCards[i], c);
@@ -99,7 +102,7 @@ public class View extends Application {
         HBox playedCardsPane = new HBox();
         playedCardsPane.getChildren().addAll(centerCards);
 
-        Label aLabel = new Label("I am a label");
+        turnLabel = new Label();
 
         StackPane centerPane = new StackPane();
         centerPane.setOnMouseClicked(e -> game.finalizeTrick());
@@ -109,9 +112,9 @@ public class View extends Application {
         centerPane.setMaxSize(width, height);
         centerPane.setPrefSize(width, height);
 
-        centerPane.getChildren().addAll(playedCardsPane, aLabel);
+        centerPane.getChildren().addAll(playedCardsPane, turnLabel);
         StackPane.setAlignment(playedCardsPane, Pos.CENTER);
-        StackPane.setAlignment(aLabel, Pos.BOTTOM_CENTER);
+        StackPane.setAlignment(turnLabel, Pos.BOTTOM_CENTER);
 
         rootPane.setCenter(centerPane);
     }
