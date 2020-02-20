@@ -3,11 +3,13 @@ package ui;
 import game.Hearts;
 import javafx.application.Application;
 import javafx.geometry.Insets;
+import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.Label;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import model.Card;
@@ -94,8 +96,23 @@ public class View extends Application {
             centerCards[i].setPrefSize(CardLabel.WIDTH, CardLabel.HEIGHT);
         }
 
-        HBox centerPane = new HBox();
-        centerPane.getChildren().addAll(centerCards);
+        HBox playedCardsPane = new HBox();
+        playedCardsPane.getChildren().addAll(centerCards);
+
+        Label aLabel = new Label("I am a label");
+
+        StackPane centerPane = new StackPane();
+        centerPane.setOnMouseClicked(e -> game.finalizeTrick());
+
+        final int width = 550, height = 460;
+        centerPane.setMinSize(width, height);
+        centerPane.setMaxSize(width, height);
+        centerPane.setPrefSize(width, height);
+
+        centerPane.getChildren().addAll(playedCardsPane, aLabel);
+        StackPane.setAlignment(playedCardsPane, Pos.CENTER);
+        StackPane.setAlignment(aLabel, Pos.BOTTOM_CENTER);
+
         rootPane.setCenter(centerPane);
     }
 

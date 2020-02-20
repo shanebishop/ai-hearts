@@ -11,14 +11,21 @@ public class Model {
 
     private List<List<Card>> hands;
     private List<Card> p1Hand, p2Hand, p3Hand, p4Hand;
+    private int[] playerScores;
 
-    private int activePlayer;
+    private int activePlayer, trickNumber, roundNum;
 
     private Card[] played;
+    private Card led; // The card that was led to start the trick
 
     public Model()
     {
+        trickNumber = 1;
+        roundNum = 1;
+        led = null;
         played = new Card[Hearts.NUM_PLAYERS];
+        playerScores = new int[Hearts.NUM_PLAYERS]; // In Java, values default to 0
+
         dealCards();
     }
 
@@ -57,6 +64,84 @@ public class Model {
     }
 
     public Card getPlayedCard(int index) { return played[index]; }
+
+    public boolean isTrickOver()
+    {
+        for (Card card : played) {
+            if (card == null) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /**
+     * Ends the trick, and sets active player appropriately. Returns true if
+     * round is over.
+     *
+     * If round is not over, sets active player to player who won the trick.
+     * If round is over, deals cards, and sets active player to player 1, so
+     * card trading can commence.
+     *
+     * @return true if round is over
+     */
+    public boolean endTrick()
+    {
+        final boolean roundOver = trickNumber == Hearts.CARDS_PER_PLAYER;
+        trickNumber = roundOver ? 1 : trickNumber + 1;
+
+        // Determine winner
+        activePlayer = determineTrickWinner();
+
+        // Add to the points to the player that won this trick
+        scoreTrick(activePlayer);
+
+        // Reset cards
+        for (int i = 0; i < played.length; ++i) {
+            played[i] = null;
+        }
+        led = null;
+
+        if (roundOver) {
+            ++roundNum;
+            dealCards();
+            activePlayer = 1; // Choose arbitrary player to be first player for card trading
+        }
+
+        return roundOver;
+    }
+
+    private void scoreTrick(int playerID)
+    {
+        int score = 0;
+        for (Card c : played) {
+            if (c.getSuit() == Card.HEART_SUIT) {
+                ++score;
+            } else if (c.getValue() == Card.QUEEN_VAL && c.getSuit() == Card.SPADE_SUITE) {
+                score += Hearts.QUEEN_OF_SPADES_SCORE;
+            }
+        }
+
+        playerScores[playerID] += score;
+    }
+
+    private int determineTrickWinner()
+    {
+        final int ledSuite = led.getSuit();
+        int maxVal = 0, trickWinner = 0;
+
+        for (int i = 0; i < played.length; ++i) {
+            final Card c = played[i];
+            final int val = c.getSuit() == ledSuite ? c.getValue() : 0;
+
+            if (val > maxVal) {
+                maxVal = val;
+                trickWinner = i;
+            }
+        }
+
+        return trickWinner;
+    }
 
     public void nextPlayer()
     {

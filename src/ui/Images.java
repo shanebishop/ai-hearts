@@ -10,12 +10,7 @@ public class Images {
 
     private static final String RESOURCES_PATH = String.format("resources%simg%s", File.separator, File.separator);
 
-    public static Image BACK;
-
-    static {
-        BACK = readImage("back.png");
-//        BACK = readImage("JS.png");
-    }
+    public static Image BACK = readImage("back.png");
 
     public static Image readImage(String filename)
     {
