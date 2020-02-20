@@ -31,6 +31,7 @@ public class Model {
 
     public int getActivePlayer() { return activePlayer; }
     public int getRoundNum() { return roundNum; }
+    public Map<Integer, int[]> getRoundScores() { return oldPlayerScores; }
 
     public List<Card> getP1Hand() { return p1Hand; }
     public List<Card> getP2Hand() { return p2Hand; }
