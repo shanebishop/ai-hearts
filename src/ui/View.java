@@ -6,11 +6,11 @@ import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.Label;
+import javafx.scene.control.Menu;
+import javafx.scene.control.MenuBar;
+import javafx.scene.control.MenuItem;
 import javafx.scene.image.ImageView;
-import javafx.scene.layout.BorderPane;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.StackPane;
-import javafx.scene.layout.VBox;
+import javafx.scene.layout.*;
 import javafx.stage.Stage;
 import model.Card;
 import model.Model;
@@ -81,13 +81,36 @@ public class View extends Application {
         p3Cards = new CardLabel[Hearts.CARDS_PER_PLAYER];
         p4Cards = new CardLabel[Hearts.CARDS_PER_PLAYER];
 
-        initHorizontalHand(p1Cards, 1);
-        initHorizontalHand(p3Cards, 3);
-        initVerticalHand(p2Cards, 2);
-        initVerticalHand(p4Cards, 4);
+        Pane p1Pane = initHorizontalHand(p1Cards, 1);
+        Pane p3Pane = initHorizontalHand(p3Cards, 3);
+        Pane p2Pane = initVerticalHand(p2Cards, 2);
+        Pane p4Pane = initVerticalHand(p4Cards, 4);
+
+        VBox topPane = new VBox();
+        MenuBar menuBar = genMenu();
+        topPane.getChildren().addAll(menuBar, p3Pane);
+
+        rootPane.setBottom(p1Pane);
+        rootPane.setLeft(p2Pane);
+        rootPane.setTop(topPane);
+        rootPane.setRight(p4Pane);
 
         centerCards = new Label[4];
         initCenterPane();
+    }
+
+    private MenuBar genMenu()
+    {
+        MenuItem item = new MenuItem("Show scores for previous rounds");
+        item.setOnAction(e -> System.out.println("Menu item pressed"));
+
+        final Menu menu = new Menu("Show Scores");
+        menu.getItems().add(item);
+
+        MenuBar menuBar = new MenuBar();
+        menuBar.getMenus().add(menu);
+
+        return menuBar;
     }
 
     private void initCenterPane()
@@ -119,7 +142,7 @@ public class View extends Application {
         rootPane.setCenter(centerPane);
     }
 
-    private void initHorizontalHand(CardLabel[] hand, int playerID)
+    private Pane initHorizontalHand(CardLabel[] hand, int playerID)
     {
         HBox pane = new HBox();
         pane.setPadding(new Insets(10));
@@ -135,15 +158,10 @@ public class View extends Application {
         }
 
         pane.getChildren().addAll(hand);
-
-        if (playerID == 3) {
-            rootPane.setTop(pane);
-        } else {
-            rootPane.setBottom(pane);
-        }
+        return pane;
     }
 
-    private void initVerticalHand(CardLabel[] hand, int playerID)
+    private Pane initVerticalHand(CardLabel[] hand, int playerID)
     {
         VBox leftPane = new VBox();
         VBox middlePane = new VBox();
@@ -164,12 +182,7 @@ public class View extends Application {
 
         HBox handPane = new HBox();
         handPane.getChildren().addAll(leftPane, middlePane, rightPane);
-
-        if (playerID == 2) {
-            rootPane.setLeft(handPane);
-        } else {
-            rootPane.setRight(handPane);
-        }
+        return handPane;
     }
 
 }
