@@ -113,7 +113,7 @@ public class View extends Application {
         centerPane.setPrefSize(width, height);
 
         centerPane.getChildren().addAll(playedCardsPane, turnLabel);
-        StackPane.setAlignment(playedCardsPane, Pos.CENTER);
+        playedCardsPane.setAlignment(Pos.CENTER); // StackPane.setAlignment() didn't work, but this does
         StackPane.setAlignment(turnLabel, Pos.BOTTOM_CENTER);
 
         rootPane.setCenter(centerPane);
