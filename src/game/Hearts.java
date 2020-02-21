@@ -20,9 +20,14 @@ public class Hearts {
 
     public Hearts(View v)
     {
+        this();
         view = v;
-        model = new Model();
         view.setModel(model);
+    }
+
+    public Hearts()
+    {
+        model = new Model();
     }
 
     public void startGame()

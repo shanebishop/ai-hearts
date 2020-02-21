@@ -159,7 +159,7 @@ public class Model {
         dealCards();
 
         // Choose arbitrary player to be first player for card trading
-        activePlayer = 1;
+        activePlayer = 0;
     }
 
     private void scoreTrick(int playerID, int trickNumber)
