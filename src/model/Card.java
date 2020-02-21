@@ -23,6 +23,17 @@ public class Card {
     public int getValue() { return value; }
 
     @Override
+    public boolean equals(Object o)
+    {
+        if (!(o instanceof Card)) {
+            return false;
+        }
+
+        final Card other = (Card) o;
+        return suit == other.suit && value == other.value;
+    }
+
+    @Override
     public String toString()
     {
         String suitStr;

@@ -80,6 +80,11 @@ public class Model {
         }
     }
 
+    public void setPlayed(int playerID, Card c)
+    {
+        setPlayed(playerID, hands.get(playerID).indexOf(c));
+    }
+
     public void setPlayed(int playerID, int index)
     {
         played[playerID] = hands.get(playerID).remove(index);
@@ -193,12 +198,13 @@ public class Model {
         return trickWinner;
     }
 
-    public void nextPlayer()
+    public int nextPlayer()
     {
         ++activePlayer;
         if (activePlayer == Hearts.NUM_PLAYERS) {
             activePlayer = 0;
         }
+        return activePlayer;
     }
 
     private void updateOldScores(int roundNumber)

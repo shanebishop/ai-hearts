@@ -1,9 +1,11 @@
 package game;
 
+import algorithms.DumbPlayer;
 import model.Card;
 import model.Model;
 import ui.View;
 
+import java.lang.management.PlatformLoggingMXBean;
 import java.util.List;
 
 public class Hearts {
@@ -15,14 +17,11 @@ public class Hearts {
     public static int NUM_PLAYERS = 4;
     public static int QUEEN_OF_SPADES_SCORE = 13;
 
-    private boolean[] aiPlayers; // true if player i is an AI player, else false
+    private PlayerType[] playerTypes;
 
     public Hearts(View v)
     {
         view = v;
-
-        aiPlayers = new boolean[NUM_PLAYERS];
-
         model = new Model();
         view.setModel(model);
     }
@@ -77,15 +76,70 @@ public class Hearts {
             return;
         }
 
-        model.setPlayed(playerID, index);
+        playCard(playerID, model.getCard(playerID, index));
+        view.update();
+    }
+
+    // Method called for both a human or an AI player playing a card
+    private void playCard(int playerID, Card toPlay)
+    {
+        model.setPlayed(playerID, toPlay);
 
         if (!model.isTrickOver()) {
             // Do not move to next player if the trick is over
-            model.nextPlayer();
+            advancePlayer();
+        }
+    }
+
+    private void advancePlayer()
+    {
+        final int activePlayer = model.nextPlayer();
+        if (isAIPlayer(activePlayer)) {
+            // Active player is an AI player
+            handleAIPlayerTurn();
+        }
+    }
+
+    private void handleAIPlayerTurn()
+    {
+        final int activePlayer = model.getActivePlayer();
+        final List<Card> hand = model.getHand(activePlayer);
+        final Card cardLed = model.getLedCard();
+        final boolean isFirstTrick = model.isFirstTrick();
+        final boolean heartsBroken = model.isHeartsBroken();
+
+        Card toPlay = null;
+
+        switch (playerTypes[activePlayer]) {
+            case DUMB_AI:
+                toPlay = DumbPlayer.chooseCard(hand, cardLed, isFirstTrick, heartsBroken);
+                break;
+            case CFR_AI:
+                System.err.println("CFR AI not supported yet");
+                System.exit(1);
+                break;
+            case UCT_AI:
+                System.err.println("UCT AI not supported yet");
+                System.exit(1);
+                break;
+            default:
+                System.err.printf("Invalid PlayerType: %s\n", playerTypes[activePlayer]);
+                System.exit(1);
+                break;
         }
 
+        playCard(activePlayer, toPlay);
         view.update();
     }
+
+//    public void handleCenterClicked()
+//    {
+//        if (model.isTrickOver()) {
+//            finalizeTrick();
+//        } else if
+//
+//        }
+//    }
 
     // If a human clicks in the center during their turn, nothing happens, because trick is not over
     // If a human clicks in the center during an AI player's turn, nothing happens, because trick is not over
@@ -99,21 +153,22 @@ public class Hearts {
             if (roundOver) {
                 view.showScoreDialog();
             }
+
+            if (isAIPlayer(model.getActivePlayer())) {
+                // TODO Handle AI Player turn
+            }
+
             // Do we still call view.update() immediately if the round is over?
             // TODO If round is over, and a player has a score >= 100, game is over - need to handle this state as well
             view.update();
         }
     }
 
-    private boolean isAIPlayer(int ind) { return aiPlayers[ind]; }
+    private boolean isAIPlayer(int playerID) { return playerTypes[playerID] != PlayerType.HUMAN; }
 
     private void initAIPlayers()
     {
-        final PlayerType[] playerTypes = view.getPlayerTypes();
-
-        for (int i = 0; i < aiPlayers.length; ++i) {
-            aiPlayers[i] = playerTypes[i] != PlayerType.HUMAN;
-        }
+        playerTypes = view.getPlayerTypes();
     }
 
     private boolean playerHasCardsInSuit(int playerID, int suit)
