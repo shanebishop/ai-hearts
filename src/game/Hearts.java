@@ -5,7 +5,6 @@ import model.Card;
 import model.Model;
 import ui.View;
 
-import java.lang.management.PlatformLoggingMXBean;
 import java.util.List;
 
 public class Hearts {
@@ -132,21 +131,22 @@ public class Hearts {
         view.update();
     }
 
-//    public void handleCenterClicked()
-//    {
-//        if (model.isTrickOver()) {
-//            finalizeTrick();
-//        } else if
-//
-//        }
-//    }
+    public void handleCenterClicked()
+    {
+        if (model.isTrickOver()) {
+            finalizeTrick();
+        }
+        if (isAIPlayer(model.getActivePlayer())) {
+            handleAIPlayerTurn();
+        }
+    }
 
     // If a human clicks in the center during their turn, nothing happens, because trick is not over
     // If a human clicks in the center during an AI player's turn, nothing happens, because trick is not over
     // If a human clicks in the center after all AI players are done, then we are free to finalize trick,
     // because the trick is over
     // Therefore, the only guard we need for execution is model.isTrickOver()
-    public void finalizeTrick()
+    private void finalizeTrick()
     {
         if (model.isTrickOver()) {
             boolean roundOver = model.endTrick(); // Ends trick, and sets active player appropriately

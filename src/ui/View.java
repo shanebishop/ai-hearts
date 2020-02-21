@@ -59,7 +59,11 @@ public class View extends Application {
 
     public void update()
     {
-        turnLabel.setText(String.format("Player %d's turn", model.getActivePlayer()+1));
+        if (model.isTrickOver()) {
+            turnLabel.setText("Click to finish trick");
+        } else {
+            turnLabel.setText(String.format("Player %d's turn", model.getActivePlayer() + 1));
+        }
 
         for (int i = 0; i < centerCards.length; ++i) {
             Card c = model.getPlayedCard(i);
@@ -156,7 +160,7 @@ public class View extends Application {
         turnLabel = new Label();
 
         StackPane centerPane = new StackPane();
-        centerPane.setOnMouseClicked(e -> game.finalizeTrick());
+        centerPane.setOnMouseClicked(e -> game.handleCenterClicked());
 
         final int width = 550, height = 460;
         centerPane.setMinSize(width, height);
