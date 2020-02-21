@@ -71,6 +71,12 @@ public class View extends Application {
         }
     }
 
+    public void showScoreDialog()
+    {
+        Dialog dialog = new ScoreDialog(model);
+        dialog.showAndWait();
+    }
+
     private void initRootPane()
     {
         p1Cards = new CardLabel[Hearts.CARDS_PER_PLAYER];
@@ -99,10 +105,7 @@ public class View extends Application {
     private MenuBar genMenu()
     {
         MenuItem item = new MenuItem("Show scores for previous rounds");
-        item.setOnAction(e -> {
-            Dialog dialog = new ScoreDialog(model);
-            dialog.showAndWait();
-        });
+        item.setOnAction(e -> showScoreDialog());
 
         final Menu menu = new Menu("Show Scores");
         menu.getItems().add(item);

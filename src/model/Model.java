@@ -13,6 +13,7 @@ public class Model {
     private Map<Integer, int[]> oldPlayerScores; // Map of round number to list of player scores
 
     private int activePlayer, trickNumber, roundNum;
+    private boolean heartsBroken;
 
     private Card[] played;
     private Card led; // The card that was led to start the trick
@@ -25,6 +26,7 @@ public class Model {
         played = new Card[Hearts.NUM_PLAYERS];
         playerScores = new int[Hearts.NUM_PLAYERS]; // In Java, values default to 0
         oldPlayerScores = new HashMap<>();
+        heartsBroken = false;
 
         dealCards();
     }
@@ -32,6 +34,10 @@ public class Model {
     public int getActivePlayer() { return activePlayer; }
     public int getRoundNum() { return roundNum; }
     public Map<Integer, int[]> getRoundScores() { return oldPlayerScores; }
+    public Card getLedCard() { return led; }
+    public List<Card> getHand(int handNum) { return hands.get(handNum); }
+    public boolean isHeartsBroken() { return heartsBroken; }
+    public boolean isFirstTrick() { return trickNumber == 1; }
 
     public List<Card> getP1Hand() { return p1Hand; }
     public List<Card> getP2Hand() { return p2Hand; }
@@ -42,6 +48,12 @@ public class Model {
     public int getP2HandSize() { return p2Hand.size(); }
     public int getP3HandSize() { return p3Hand.size(); }
     public int getP4HandSize() { return p4Hand.size(); }
+
+    public Card getCard(int handNum, int index)
+    {
+        List<Card> hand = hands.get(handNum);
+        return index < hand.size() ? hand.get(index) : null;
+    }
 
     public int getSuit(int handNum, int index)
     {
@@ -58,6 +70,14 @@ public class Model {
     public boolean cardAtIndex(int playerID, int index)
     {
         return index < hands.get(playerID).size();
+    }
+
+    public void setHeartsBroken()
+    {
+        if (!heartsBroken) {
+            heartsBroken = true;
+            System.out.println("Hearts broken!");
+        }
     }
 
     public void setPlayed(int playerID, int index)
@@ -109,18 +129,32 @@ public class Model {
         led = null;
 
         if (roundOver) {
-            updateOldScores(roundNum);
-            ++roundNum;
-            dealCards();
-            activePlayer = 1; // Choose arbitrary player to be first player for card trading
-        }
-
-        // Clear this round's scores
-        for (int i = 0; i < playerScores.length; ++i) {
-            playerScores[i] = 0;
+            handleRoundOver();
         }
 
         return roundOver;
+    }
+
+    private void handleRoundOver()
+    {
+        // Update old scores
+        updateOldScores(roundNum);
+
+        // Increment round number
+        ++roundNum;
+
+        // Reset scores, heartsBroken, and trick number
+        for (int i = 0; i < playerScores.length; ++i) {
+            playerScores[i] = 0;
+        }
+        heartsBroken = false;
+        trickNumber = 1;
+
+        // Deal cards
+        dealCards();
+
+        // Choose arbitrary player to be first player for card trading
+        activePlayer = 1;
     }
 
     private void scoreTrick(int playerID, int trickNumber)
