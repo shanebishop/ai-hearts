@@ -62,12 +62,8 @@ public class Hearts {
             if (isFirstTrick) {
                 canPlayHeart = false; // Cannot play a points card on first trick
             } else if (leading) {
-                System.out.printf("Trying to lead %s\n", tryingToPlay);
-                System.out.printf("Hearts broken: %s\n", heartsBroken);
-                System.out.printf("Player has only hearts: %s\n", playerHasOnlyHearts(activePlayer));
                 canPlayHeart = heartsBroken || playerHasOnlyHearts(activePlayer);
             } else {
-                System.out.println("Trying to play a heart when not leading");
                 canPlayHeart = heartsLed || !playerHasCardsInSuit(activePlayer, cardLed.getSuit());
             }
 
@@ -101,7 +97,9 @@ public class Hearts {
     {
         if (model.isTrickOver()) {
             boolean roundOver = model.endTrick(); // Ends trick, and sets active player appropriately
-            view.showScoreDialog();
+            if (roundOver) {
+                view.showScoreDialog();
+            }
             // Do we still call view.update() immediately if the round is over?
             // TODO If round is over, and a player has a score >= 100, game is over - need to handle this state as well
             view.update();
