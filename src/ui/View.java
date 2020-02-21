@@ -1,6 +1,7 @@
 package ui;
 
 import game.Hearts;
+import game.PlayerType;
 import javafx.application.Application;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -12,6 +13,8 @@ import javafx.stage.Stage;
 import model.Card;
 import model.Model;
 
+import java.util.Optional;
+
 public class View extends Application {
 
     private Hearts game;
@@ -22,6 +25,8 @@ public class View extends Application {
     private CardLabel[] p1Cards, p2Cards, p3Cards, p4Cards;
     private Label[] centerCards;
     private Label turnLabel;
+
+    private PlayerType[] playerTypes;
 
     public static void main(String[] args)
     {
@@ -36,6 +41,8 @@ public class View extends Application {
         rootPane = new BorderPane();
         initRootPane();
 
+        showSetupDialog();
+
         stage.setTitle("Hearts");
         stage.setScene(new Scene(rootPane));
         stage.setResizable(false);
@@ -45,6 +52,8 @@ public class View extends Application {
 
         update();
     }
+
+    public PlayerType[] getPlayerTypes() { return playerTypes; }
 
     public void setModel(Model m) { model = m; }
 
@@ -75,6 +84,22 @@ public class View extends Application {
     {
         Dialog dialog = new ScoreDialog(model);
         dialog.showAndWait();
+    }
+
+    private void showSetupDialog()
+    {
+        SetupDialog setupDialog = new SetupDialog();
+        Optional<ButtonType> result = setupDialog.showAndWait();
+
+        if (!result.isPresent()) {
+            // User closed dialog without pressing OK
+            System.out.println("Terminating.");
+            System.exit(0);
+        }
+
+        playerTypes = setupDialog.getPlayerTypes();
+
+        System.out.printf("Player types: %s, %s, %s, %s\n", playerTypes[0], playerTypes[1], playerTypes[2], playerTypes[3]);
     }
 
     private void initRootPane()

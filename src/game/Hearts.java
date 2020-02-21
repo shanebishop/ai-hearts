@@ -22,7 +22,6 @@ public class Hearts {
         view = v;
 
         aiPlayers = new boolean[NUM_PLAYERS];
-        // TODO Set the indices in aiPlayers to true based on what the user chose in setup dialog
 
         model = new Model();
         view.setModel(model);
@@ -30,7 +29,7 @@ public class Hearts {
 
     public void startGame()
     {
-        // TODO Implement me - this will be where the control will query the view for setup details, and initialize aiPlayers array
+        initAIPlayers();
     }
 
     public void handleCardClicked(int playerID, int index)
@@ -107,6 +106,15 @@ public class Hearts {
     }
 
     private boolean isAIPlayer(int ind) { return aiPlayers[ind]; }
+
+    private void initAIPlayers()
+    {
+        final PlayerType[] playerTypes = view.getPlayerTypes();
+
+        for (int i = 0; i < aiPlayers.length; ++i) {
+            aiPlayers[i] = playerTypes[i] != PlayerType.HUMAN;
+        }
+    }
 
     private boolean playerHasCardsInSuit(int playerID, int suit)
     {
