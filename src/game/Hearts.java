@@ -1,13 +1,15 @@
 package game;
 
 import algorithms.DumbPlayer;
+import algorithms.GameID;
+import algorithms.GameInterface;
 import model.Card;
 import model.Model;
 import ui.View;
 
-import java.util.List;
+import java.util.*;
 
-public class Hearts {
+public class Hearts implements GameInterface<Card> {
 
     private View view;
     private Model model;
@@ -15,6 +17,7 @@ public class Hearts {
     public static int CARDS_PER_PLAYER = 13;
     public static int NUM_PLAYERS = 4;
     public static int QUEEN_OF_SPADES_SCORE = 13;
+    public static int END_SCORE = 100;
 
     private PlayerType[] playerTypes;
 
@@ -28,6 +31,11 @@ public class Hearts {
     public Hearts()
     {
         model = new Model();
+    }
+
+    private Hearts(Hearts other) {
+        model = new Model(other.model);
+        playerTypes = Arrays.copyOf(other.playerTypes, other.playerTypes.length);
     }
 
     public void startGame()
@@ -196,6 +204,149 @@ public class Hearts {
             }
         }
         return true;
+    }
+
+    private boolean playerHasTwelveOrMoreHearts(int playerID)
+    {
+        int numHearts = 0;
+        List<Card> hand = model.getHand(playerID);
+        for (Card c : hand) {
+            if (c.getSuit() != Card.HEART_SUIT) {
+                ++numHearts;
+            }
+        }
+        return numHearts >= 12;
+    }
+
+    @Override
+    public void beginGame()
+    {
+        model = new Model();
+    }
+
+    @Override
+    public void makeMove(Card move)
+    {
+        playCard(model.getActivePlayer(), move);
+    }
+
+    @Override
+    public List<Double> payout()
+    {
+        List<Double> payout = new ArrayList<>();
+        Map<Integer, int[]> scores = model.getRoundScores();
+        double score;
+
+        for (int playerID : scores.keySet()) {
+            score = Arrays.stream(scores.get(playerID)).sum();
+            payout.add(score);
+        }
+
+        return payout;
+    }
+
+    @Override
+    public GameInterface<Card> deepCopy()
+    {
+        return new Hearts(this);
+    }
+
+    @Override
+    public GameID getID()
+    {
+        return State.fromModel(model);
+    }
+
+    @Override
+    public boolean isGameOver()
+    {
+        return model.isGameOver();
+    }
+
+    @Override
+    public int numPlayers()
+    {
+        return playerTypes.length;
+    }
+
+    @Override
+    public int activePlayer()
+    {
+        return model.getActivePlayer();
+    }
+
+    @Override
+    public List<Card> moves()
+    {
+        List<Card> cards = model.getHand(activePlayer());
+
+        if (cards.size() < 2) {
+            // If have 0 or 1 cards, all cards in hand are playable
+            return cards;
+        }
+
+        // Sort cards to ensure deterministic order
+        Collections.sort(cards);
+
+        List<Card> playable = new ArrayList<>();
+
+        for (Card c : cards) {
+            if (canPlay(c)) {
+                playable.add(c);
+            }
+        }
+
+        return playable;
+    }
+
+    private boolean canPlay(Card c) {
+        final Card cardLed = model.getLedCard();
+        final int tryingToPlaySuit = c.getSuit();
+
+        final boolean heartsBroken = model.isHeartsBroken();
+        final boolean tryingToPlayHeart = tryingToPlaySuit == Card.HEART_SUIT;
+        final boolean isFirstTrick = model.isFirstTrick();
+
+        if (isFirstTrick && cardLed != null) {
+            if (c.getSuit() == cardLed.getSuit()) {
+                return true;
+            }
+            if (playerHasCardsInSuit(activePlayer(), cardLed.getSuit())) {
+                return false;
+            }
+            if (!c.isPointsCard()) {
+                return true;
+            }
+            if (playerHasOnlyHearts(activePlayer())) {
+                return true;
+            }
+
+            // c is a points card, so if player has 12 or more hearts
+            // (either 13 hearts or 12 hearts + queen of spades),
+            // they can technically play
+            return playerHasTwelveOrMoreHearts(activePlayer());
+        }
+
+        if (cardLed == null) {
+            if (isFirstTrick && !c.isPointsCard()) {
+                // Technically, this isn't quite correct - it might be the
+                // that the player only has points cards in their hand
+                return true;
+            }
+            if (!tryingToPlayHeart) {
+                return true;
+            }
+            return heartsBroken || playerHasOnlyHearts(activePlayer());
+        }
+
+        // Card has been led
+
+        if (tryingToPlaySuit == cardLed.getSuit()) {
+            // Following suit of card led
+            return true;
+        }
+
+        return !playerHasCardsInSuit(activePlayer(), cardLed.getSuit());
     }
 
 }

@@ -15,8 +15,10 @@ public class Model {
     private int activePlayer, trickNumber, roundNum;
     private boolean heartsBroken;
 
-    private Card[] played;
+    private Card[] played; // Cards played this trick
     private Card led; // The card that was led to start the trick
+
+    private boolean gameOver;
 
     public Model()
     {
@@ -27,8 +29,51 @@ public class Model {
         playerScores = new int[Hearts.NUM_PLAYERS]; // In Java, values default to 0
         oldPlayerScores = new HashMap<>();
         heartsBroken = false;
+        gameOver = false;
 
         dealCards();
+    }
+
+    public Model(Model other)
+    {
+        // Deep copy hands list
+        hands = new ArrayList<>();
+        for (int i = 0; i < other.hands.size(); ++i) {
+            List<Card> hand = other.hands.get(i);
+            hands.add(new ArrayList<>());
+
+            for (Card card : hand) {
+                hands.get(i).add(new Card(card));
+            }
+        }
+
+        p1Hand = hands.get(0);
+        p2Hand = hands.get(1);
+        p3Hand = hands.get(2);
+        p4Hand = hands.get(3);
+
+        playerScores = Arrays.copyOf(other.playerScores, other.playerScores.length);
+
+        // Deep copy oldPlayerScores map
+        oldPlayerScores = new HashMap<>();
+        for (int key : other.oldPlayerScores.keySet()) {
+            int[] scores = other.oldPlayerScores.get(key);
+            oldPlayerScores.put(key, Arrays.copyOf(scores, scores.length));
+        }
+
+        activePlayer = other.activePlayer;
+        trickNumber = other.trickNumber;
+        roundNum = other.roundNum;
+        heartsBroken = other.heartsBroken;
+
+        // Deep copy played array
+        played = new Card[other.played.length];
+        for (int i = 0; i < played.length; ++i) {
+            played[i] = new Card(other.played[i]);
+        }
+
+        led = new Card(other.led);
+        gameOver = other.gameOver;
     }
 
     public int getActivePlayer() { return activePlayer; }
@@ -38,6 +83,9 @@ public class Model {
     public List<Card> getHand(int handNum) { return hands.get(handNum); }
     public boolean isHeartsBroken() { return heartsBroken; }
     public boolean isFirstTrick() { return trickNumber == 1; }
+    public boolean isGameOver() { return gameOver; }
+    public int[] getCurrentScoresForThisRound() { return playerScores; }
+    public int getTrickNumber() { return trickNumber; }
 
     public List<Card> getP1Hand() { return p1Hand; }
     public List<Card> getP2Hand() { return p2Hand; }
@@ -91,6 +139,9 @@ public class Model {
         if (led == null) {
             led = played[playerID];
         }
+        if (played[playerID].getSuit() == Card.HEART_SUIT && !heartsBroken) {
+            setHeartsBroken();
+        }
     }
 
     public Card getPlayedCard(int index) { return played[index]; }
@@ -143,7 +194,13 @@ public class Model {
     private void handleRoundOver()
     {
         // Update old scores
+        // If a score reaches min for ending game, this.gameOver is set to true
+        // TODO Implement shooting the moon
         updateOldScores(roundNum);
+
+        if (gameOver) {
+            return; // Don't want to do any resetting, because game is over
+        }
 
         // Increment round number
         ++roundNum;
@@ -207,15 +264,20 @@ public class Model {
         return activePlayer;
     }
 
-    private void updateOldScores(int roundNumber)
+    // TODO Implement shooting the moon
+    private boolean updateOldScores(int roundNumber)
     {
         // Clone the array
         int[] scoresClone = new int[playerScores.length];
         for (int i = 0; i < playerScores.length; ++i) {
             scoresClone[i] = playerScores[i];
+            if (scoresClone[i] >= Hearts.END_SCORE) {
+                gameOver = true;
+            }
         }
 
         oldPlayerScores.put(roundNumber, scoresClone);
+        return gameOver;
     }
 
     private void dealCards()

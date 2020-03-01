@@ -41,7 +41,7 @@ public interface GameInterface<S> {
      *
      * @return Game's ID
      */
-    String getID();
+    GameID getID();
 
     /**
      * Checks if game is over

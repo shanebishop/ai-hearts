@@ -1,6 +1,6 @@
 package model;
 
-public class Card {
+public class Card implements Comparable<Card> {
 
     public static final int CLUB_SUIT = 0, DIAMOND_SUIT = 1, HEART_SUIT = 2, SPADE_SUITE = 3;
     public static final int JACK_VAL = 11, QUEEN_VAL = 12, KING_VAL = 13, ACE_VAL = 14;
@@ -21,6 +21,17 @@ public class Card {
 
     public int getSuit() { return suit; }
     public int getValue() { return value; }
+
+    public boolean isPointsCard()
+    {
+        return suit == HEART_SUIT || (value == QUEEN_VAL && suit == SPADE_SUITE);
+    }
+
+    @Override
+    public int hashCode()
+    {
+        return suit * 13 + value; // 13 values per suit
+    }
 
     @Override
     public boolean equals(Object o)
@@ -59,6 +70,13 @@ public class Card {
         }
 
         return String.format("%s%s", valStr, suitStr);
+    }
+
+    @Override
+    public int compareTo(Card o) {
+        final int ourSum = value + suit;
+        final int theirSum = o.value + o.suit;
+        return ourSum - theirSum;
     }
 
 }
