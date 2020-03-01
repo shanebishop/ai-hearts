@@ -10,8 +10,9 @@ public class TrainCFR {
     {
         Hearts game = new Hearts();
         //CounterfactualRegretMinimizer<HeartsMove> trainer = new CounterfactualRegretMinimizer<>(game);
-        CounterfactualRegretMinimizer<Card> trainer = new CounterfactualRegretMinimizer<Card>(game);
-        trainer.solve("cfrtraining.txt", 1000, 1000, 10000);
+        CounterfactualRegretMinimizer<Card> trainer = new CounterfactualRegretMinimizer<>(game);
+        //trainer.solve("cfrtraining.txt", 1000, 1000, 10000);
+        trainer.solve("cfrtraining.txt", 1, 1, 1);
     }
 
 }

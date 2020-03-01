@@ -1,5 +1,7 @@
 package algorithms;
 
+import game.State;
+
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -11,8 +13,8 @@ public class CounterfactualRegretMinimizer<S> {
 
     private GameInterface<S> m_game;
     private int numPlayers;
-    List<Map<String, List<Double>>> aggregateRegrets;
-    List<Map<String, List<Double>>> aggregateStrategies;
+    private List<Map<GameID, List<Double>>> aggregateRegrets;
+    private List<Map<GameID, List<Double>>> aggregateStrategies;
 
     public CounterfactualRegretMinimizer(GameInterface<S> g)
     {
@@ -25,7 +27,7 @@ public class CounterfactualRegretMinimizer<S> {
         initAggregateList(aggregateStrategies);
     }
 
-    private void initAggregateList(List<Map<String, List<Double>>> list)
+    private void initAggregateList(List<Map<GameID, List<Double>>> list)
     {
         for (int i = 0; i < numPlayers; ++i) {
             list.add(new HashMap<>());
@@ -57,7 +59,7 @@ public class CounterfactualRegretMinimizer<S> {
         System.out.println("Reached mex iterations. Will now stop training.");
     }
 
-    public void train(int numIterations)
+    private void train(int numIterations)
     {
         for (int i = 0; i < numIterations; ++i) {
             GameInterface<S> copy = m_game.deepCopy();
@@ -77,7 +79,7 @@ public class CounterfactualRegretMinimizer<S> {
         }
 
         final int activePlayer = game.activePlayer();
-        final String id = game.getID();
+        final GameID id = game.getID(activePlayer);
 
         if (!aggregateStrategies.get(activePlayer).containsKey(id)) {
             aggregateStrategies.get(activePlayer).put(id, new ArrayList<>());
@@ -129,7 +131,7 @@ public class CounterfactualRegretMinimizer<S> {
         return nodeUtilies;
     }
 
-    public void save(String filename)
+    private void save(String filename)
     {
         try {
             FileWriter writer = new FileWriter(filename, true); // true means append to file
@@ -172,13 +174,13 @@ public class CounterfactualRegretMinimizer<S> {
         out.close();
     }
 
-    private void saveData(PrintWriter out, List<Map<String, List<Double>>> aggregate, boolean divByTotal)
+    private void saveData(PrintWriter out, List<Map<GameID, List<Double>>> aggregate, boolean divByTotal)
     {
         for (int player = 0; player < numPlayers; ++player) {
-            Map<String, List<Double>> map = aggregate.get(player);
+            Map<GameID, List<Double>> map = aggregate.get(player);
             out.printf("Player: %d\n", player);
 
-            for (String id : map.keySet()) {
+            for (GameID id : map.keySet()) {
                 final List<Double> strat = map.get(id);
                 final double total = sum(strat);
 
@@ -265,7 +267,7 @@ public class CounterfactualRegretMinimizer<S> {
         return true;
     }
 
-    private void readData(List<String> lines, List<Map<String, List<Double>>> aggregates)
+    private void readData(List<String> lines, List<Map<GameID, List<Double>>> aggregates)
     {
         String buffer;
 
@@ -277,21 +279,25 @@ public class CounterfactualRegretMinimizer<S> {
             while (!buffer.equalsIgnoreCase("end")) {
                 final int delim_index = buffer.indexOf('\t');
                 final String key = buffer.substring(0, delim_index);
-                final String[] tokens = key.split("\\s+");
+                final String[] tokens = key.split("\t");
                 List<Double> value = new ArrayList<>();
 
                 for (String token : tokens) {
                     value.add(Double.parseDouble(token));
                 }
 
-                aggregates.get(player).put(key, value);
+                aggregates.get(player).put(State.fromString(key), value);
                 buffer = lines.remove(0);
             }
         }
     }
 
-    private List<Double> getStrategy(int playerID, String infoSetID, List<S> moves)
+    private List<Double> getStrategy(int playerID, GameID infoSetID, List<S> moves)
     {
+        // TODO Temp
+        String infoSetIDStr = infoSetID.toString();
+        System.out.println(infoSetIDStr);
+
         // Retrieve historical data for this information set
         final List<Double> cumulativeRegrets = aggregateRegrets.get(playerID).get(infoSetID);
         List<Double> strategy = new ArrayList<>();

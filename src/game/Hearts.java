@@ -35,7 +35,8 @@ public class Hearts implements GameInterface<Card> {
 
     private Hearts(Hearts other) {
         model = new Model(other.model);
-        playerTypes = Arrays.copyOf(other.playerTypes, other.playerTypes.length);
+        playerTypes = other.playerTypes == null
+                ? null : Arrays.copyOf(other.playerTypes, other.playerTypes.length);
     }
 
     public void startGame()
@@ -252,9 +253,9 @@ public class Hearts implements GameInterface<Card> {
     }
 
     @Override
-    public GameID getID()
+    public GameID getID(int playerID)
     {
-        return State.fromModel(model);
+        return State.fromModel(model, playerID);
     }
 
     @Override
@@ -264,10 +265,7 @@ public class Hearts implements GameInterface<Card> {
     }
 
     @Override
-    public int numPlayers()
-    {
-        return playerTypes.length;
-    }
+    public int numPlayers() { return Hearts.NUM_PLAYERS; }
 
     @Override
     public int activePlayer()

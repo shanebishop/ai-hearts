@@ -39,9 +39,10 @@ public interface GameInterface<S> {
     /**
      * Returns the game's unique ID
      *
+     * @param playerID ID of player
      * @return Game's ID
      */
-    GameID getID();
+    GameID getID(int playerID);
 
     /**
      * Checks if game is over

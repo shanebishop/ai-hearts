@@ -69,10 +69,10 @@ public class Model {
         // Deep copy played array
         played = new Card[other.played.length];
         for (int i = 0; i < played.length; ++i) {
-            played[i] = new Card(other.played[i]);
+            played[i] = other.played[i] == null ? null : new Card(other.played[i]);
         }
 
-        led = new Card(other.led);
+        led = other.led == null ? null : new Card(other.led);
         gameOver = other.gameOver;
     }
 

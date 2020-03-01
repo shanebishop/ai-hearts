@@ -72,6 +72,42 @@ public class Card implements Comparable<Card> {
         return String.format("%s%s", valStr, suitStr);
     }
 
+    public static Card fromString(String str)
+    {
+        final char valChar = str.charAt(0);
+        final char suitChar = str.charAt(str.length()-1);
+
+        int suit;
+        switch (suitChar) {
+            case 'C': suit = CLUB_SUIT; break;
+            case 'D': suit = DIAMOND_SUIT; break;
+            case 'H': suit = HEART_SUIT; break;
+            case 'S': suit = SPADE_SUITE; break;
+            default: return null;
+        }
+
+        if (valChar == '1') {
+            // This is a ten
+            return new Card(suit, 10);
+        }
+
+        switch (valChar) {
+            case '2': return new Card(suit, 2);
+            case '3': return new Card(suit, 3);
+            case '4': return new Card(suit, 4);
+            case '5': return new Card(suit, 5);
+            case '6': return new Card(suit, 6);
+            case '7': return new Card(suit, 7);
+            case '8': return new Card(suit, 8);
+            case '9': return new Card(suit, 9);
+            case 'J': return new Card(suit, JACK_VAL);
+            case 'Q': return new Card(suit, QUEEN_VAL);
+            case 'K': return new Card(suit, KING_VAL);
+            case 'A': return new Card(suit, ACE_VAL);
+            default: return null;
+        }
+    }
+
     @Override
     public int compareTo(Card o) {
         final int ourSum = value + suit;
