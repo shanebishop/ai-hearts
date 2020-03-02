@@ -74,4 +74,11 @@ public interface GameInterface<S> {
      */
     List<S> moves();
 
+    // ------------------------------------------------
+    // All methods below are for debugging only
+
+    int roundNumber();
+
+    int[] scores();
+
 }

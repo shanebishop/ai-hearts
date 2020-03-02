@@ -16,9 +16,13 @@ public class CounterfactualRegretMinimizer<S> {
     private List<Map<GameID, List<Double>>> aggregateRegrets;
     private List<Map<GameID, List<Double>>> aggregateStrategies;
 
-    public CounterfactualRegretMinimizer(GameInterface<S> g)
+    private int trainDepth, maxTrainDepth;
+
+    public CounterfactualRegretMinimizer(GameInterface<S> g, int maxTrainDepth)
     {
         m_game = g;
+        this.maxTrainDepth = maxTrainDepth;
+        trainDepth = 0;
         numPlayers = m_game.numPlayers();
 
         aggregateRegrets = new ArrayList<>();
@@ -61,21 +65,40 @@ public class CounterfactualRegretMinimizer<S> {
 
     private void train(int numIterations)
     {
-        for (int i = 0; i < numIterations; ++i) {
+        // TODO Uncomment
+        //for (int i = 0; i < numIterations; ++i) {
             GameInterface<S> copy = m_game.deepCopy();
             copy.beginGame();
 
             List<Double> probabilities = newList(numPlayers, 1.0);
 
             train(copy, probabilities);
-        }
+        //}
     }
 
     private List<Double> train(final GameInterface<S> game, final List<Double> probabilities)
     {
-        // Check if game has ended
-        if (game.isGameOver()) {
+        // Check if game has ended or rounds has exceeded 14
+        // TODO Maybe I shouldn't be forcing ending at 14
+        if (game.isGameOver() || game.roundNumber() > 2) {
+            //System.out.printf("Scores: %s\n", Arrays.toString(game.scores()));
+            //System.out.println("A game ended");
+            assert(game.payout().size() >= 4);
+            //System.out.println("payout: "+game.payout());
             return game.payout();
+        }
+
+        if (trainDepth++ >= maxTrainDepth) {
+            return game.payout();
+        }
+        System.out.println(trainDepth);
+
+        // TODO Temp
+        //System.out.printf("\nRound %d.\n", game.roundNumber());
+        if (game.roundNumber() > 14) {
+            System.err.println("Round number exceeded 13");
+            System.err.printf("Scores: %s\n", Arrays.toString(game.scores()));
+            System.exit(1);
         }
 
         final int activePlayer = game.activePlayer();
@@ -86,11 +109,13 @@ public class CounterfactualRegretMinimizer<S> {
         }
 
         final List<S> moves = game.moves();
+        //System.out.println(moves.size());
 
         // Determine player's strategy
         final List<Double> strategy = getStrategy(activePlayer, id, moves);
         List<List<Double>> actionUtilities = new ArrayList<>();
         List<Double> nodeUtilies = newList(numPlayers, 0.0);
+        assert(nodeUtilies.size() >= 4);
 
         // Recursively train on each action
         for (int move = 0; move < moves.size(); ++move) {
@@ -101,12 +126,21 @@ public class CounterfactualRegretMinimizer<S> {
             multInPlace(probabilitiesCopy, activePlayer, strategy.get(move));
 
             // Update utilities
-            actionUtilities.add(train(gameCopy, probabilitiesCopy));
+            List<Double> trainResults = train(gameCopy, probabilitiesCopy);
+            //System.out.println("trainResults: "+trainResults);
+            assert(trainResults.size() >= 4);
+            //actionUtilities.add(train(gameCopy, probabilitiesCopy));
+            actionUtilities.add(trainResults);
             for (int agent = 0; agent < numPlayers; ++agent) {
+                //System.out.println("actionUtilities.get(move): "+actionUtilities.get(move));
                 final double toAdd = strategy.get(move) * actionUtilities.get(move).get(agent);
                 addInPlace(nodeUtilies, agent, toAdd);
             }
         }
+
+        // Make sure we have all zeroes in aggregateRegrets and aggregateStrategies
+        setToZeroes(aggregateRegrets.get(activePlayer).get(id), moves.size());
+        setToZeroes(aggregateStrategies.get(activePlayer).get(id), moves.size());
 
         // Accumulate counterfactual regret
         for (int move = 0; move < moves.size(); ++move) {
@@ -128,7 +162,15 @@ public class CounterfactualRegretMinimizer<S> {
                     counterfactual * strategy.get(move));
         }
 
+        //System.out.println("nodeUtilities: "+nodeUtilies);
+        //System.out.flush();
         return nodeUtilies;
+    }
+
+    private void setToZeroes(List<Double> list, int n) {
+        if (list.isEmpty()) {
+            list.addAll(Collections.nCopies(n, 0.0));
+        }
     }
 
     private void save(String filename)
@@ -294,18 +336,20 @@ public class CounterfactualRegretMinimizer<S> {
 
     private List<Double> getStrategy(int playerID, GameID infoSetID, List<S> moves)
     {
-        // TODO Temp
-        String infoSetIDStr = infoSetID.toString();
-        System.out.println(infoSetIDStr);
+        if (!aggregateRegrets.get(playerID).containsKey(infoSetID)) {
+            // If no historical data for this information set, make a new entry for this information set
+            aggregateRegrets.get(playerID).put(infoSetID, new ArrayList<>());
+        }
 
         // Retrieve historical data for this information set
         final List<Double> cumulativeRegrets = aggregateRegrets.get(playerID).get(infoSetID);
+
         List<Double> strategy = new ArrayList<>();
         double normalizingSum = 0;
 
         // Choose actions with probability in proportion to their regret
         for (int move = 0; move < moves.size(); ++move) {
-            final double regret = Math.max(cumulativeRegrets.get(move), 0);
+            final double regret = Math.max(getOrZero(cumulativeRegrets, move), 0);
             strategy.add(regret);
             normalizingSum += regret;
         }
@@ -320,6 +364,11 @@ public class CounterfactualRegretMinimizer<S> {
         }
 
         return strategy;
+    }
+
+    private double getOrZero(List<Double> list, int index)
+    {
+        return index < list.size() ? list.get(index) : 0;
     }
 
     private static double sum(List<Double> toSum)
@@ -351,6 +400,12 @@ public class CounterfactualRegretMinimizer<S> {
 
     private static void addInPlace(List<Double> list, int ind, double addend)
     {
+        // Make sure there are zeroes in whatever might be missing from this list's size to index into it
+        // TODO Refactor so that we only add once
+        while (ind >= list.size()) {
+            list.add(0.0);
+        }
+
         final double val = list.get(ind) + addend;
         list.set(ind, val);
     }

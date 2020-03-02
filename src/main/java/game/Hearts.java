@@ -20,12 +20,14 @@ public class Hearts implements GameInterface<Card> {
     public static int END_SCORE = 100;
 
     private PlayerType[] playerTypes;
+    private boolean training;
 
     public Hearts(View v)
     {
         this();
         view = v;
         view.setModel(model);
+        training = false;
     }
 
     public Hearts()
@@ -34,15 +36,33 @@ public class Hearts implements GameInterface<Card> {
     }
 
     private Hearts(Hearts other) {
+        training = other.training;
         model = new Model(other.model);
-        playerTypes = other.playerTypes == null
-                ? null : Arrays.copyOf(other.playerTypes, other.playerTypes.length);
+//        playerTypes = other.playerTypes == null
+//                ? null : Arrays.copyOf(other.playerTypes, other.playerTypes.length);
+        playerTypes = Arrays.copyOf(other.playerTypes, other.playerTypes.length);
     }
+
+    @Override
+    public int roundNumber() { return model.getRoundNum(); }
+
+    @Override
+    public int[] scores() { return model.getTotalScores(); }
 
     public void startGame()
     {
         initAIPlayers();
     }
+
+    public void setAllPlayerTypes(PlayerType playerType)
+    {
+        playerTypes = new PlayerType[NUM_PLAYERS];
+        for (int i = 0; i < playerTypes.length; ++i) {
+            playerTypes[i] = playerType;
+        }
+    }
+
+    public void setTraining(boolean b) { training = b; }
 
     public void handleCardClicked(int playerID, int index)
     {
@@ -102,12 +122,16 @@ public class Hearts implements GameInterface<Card> {
             // Do not move to next player if the trick is over
             advancePlayer();
         }
+
+        if (model.isTrickOver() && training) {
+            finalizeTrick();
+        }
     }
 
     private void advancePlayer()
     {
         final int activePlayer = model.nextPlayer();
-        if (isAIPlayer(activePlayer)) {
+        if (isAIPlayer(activePlayer) && !training) {
             // Active player is an AI player
             handleAIPlayerTurn();
         }
@@ -164,17 +188,20 @@ public class Hearts implements GameInterface<Card> {
     {
         if (model.isTrickOver()) {
             boolean roundOver = model.endTrick(); // Ends trick, and sets active player appropriately
-            if (roundOver) {
+
+            if (roundOver && !training) {
                 view.showScoreDialog();
             }
 
-            if (isAIPlayer(model.getActivePlayer())) {
-                // TODO Handle AI Player turn
+            if (isAIPlayer(model.getActivePlayer()) && !training) {
+                handleAIPlayerTurn();
             }
 
             // Do we still call view.update() immediately if the round is over?
             // TODO If round is over, and a player has a score >= 100, game is over - need to handle this state as well
-            view.update();
+            if (!training) {
+                view.update();
+            }
         }
     }
 
@@ -235,12 +262,16 @@ public class Hearts implements GameInterface<Card> {
     public List<Double> payout()
     {
         List<Double> payout = new ArrayList<>();
-        Map<Integer, int[]> scores = model.getRoundScores();
-        double score;
+        int[] scores = model.getFinalTotalScores();
 
-        for (int playerID : scores.keySet()) {
-            score = Arrays.stream(scores.get(playerID)).sum();
-            payout.add(score);
+        for (int i = 0; i < scores.length; ++i) {
+            payout.add((double) scores[i]);
+        }
+
+        // TODO Temp
+        if (payout.size() < 4) {
+            System.err.println("payout is incorrect size");
+            System.exit(1);
         }
 
         return payout;

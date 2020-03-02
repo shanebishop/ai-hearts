@@ -95,7 +95,8 @@ public class State extends GameID {
 
     private static <T> String toStringNoSpaces(T[] a) { return toStringNoSpaces(Arrays.asList(a)); }
 
-    public static GameID fromString(final String str)
+    @SuppressWarnings("unchecked")
+    public static <T extends GameID> T fromString(final String str)
     {
         State state = new State();
 
@@ -106,7 +107,7 @@ public class State extends GameID {
         state.played = parseCardArray(tokens[1]);
         state.isFirstTrick = Boolean.parseBoolean(tokens[2]);
 
-        return state;
+        return (T) state;
     }
 
     private static List<Card> parseCardCollection(final String str)
@@ -126,7 +127,8 @@ public class State extends GameID {
         return array;
     }
 
-    public static GameID fromModel(Model m, int playerID)
+    @SuppressWarnings("unchecked")
+    public static <T extends GameID> T fromModel(Model m, int playerID)
     {
         State state = new State();
 
@@ -139,7 +141,7 @@ public class State extends GameID {
         state.hand = new ArrayList<>(m.getHand(playerID));
         state.isFirstTrick = m.isFirstTrick();
 
-        return state;
+        return (T) state;
     }
 
 }

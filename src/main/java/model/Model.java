@@ -120,6 +120,23 @@ public class Model {
         return index < hands.get(playerID).size();
     }
 
+    public int[] getTotalScores()
+    {
+        // Start from the current score of this round
+        int[] totalScores = playerScores.clone();
+
+        for (int key : oldPlayerScores.keySet()) {
+            int[] roundScores = oldPlayerScores.get(key);
+
+            // Increment each accumulator by corresponding player's score this round
+            for (int playerID = 0; playerID < totalScores.length; ++playerID) {
+                totalScores[playerID] += roundScores[playerID];
+            }
+        }
+
+        return totalScores;
+    }
+
     public void setHeartsBroken()
     {
         if (!heartsBroken) {
@@ -232,9 +249,10 @@ public class Model {
 
         playerScores[playerID] += score;
 
-        System.out.printf("Player %d won trick %d, earning %d point%s. ",
-                playerID+1, trickNumber, score, score == 1 ? "" : "s");
-        System.out.printf("Player %d's score is now %d.\n", playerID+1, playerScores[playerID]);
+        // TODO Uncomment me
+//        System.out.printf("Player %d won trick %d, earning %d point%s. ",
+//                playerID+1, trickNumber, score, score == 1 ? "" : "s");
+//        System.out.printf("Player %d's score is now %d.\n", playerID+1, playerScores[playerID]);
     }
 
     private int determineTrickWinner()
@@ -267,17 +285,36 @@ public class Model {
     // TODO Implement shooting the moon
     private boolean updateOldScores(int roundNumber)
     {
-        // Clone the array
-        int[] scoresClone = new int[playerScores.length];
-        for (int i = 0; i < playerScores.length; ++i) {
-            scoresClone[i] = playerScores[i];
-            if (scoresClone[i] >= Hearts.END_SCORE) {
-                gameOver = true;
+        // Update oldPlayerScores
+        // This must be done first, before computing totals
+        oldPlayerScores.put(roundNumber, playerScores.clone());
+
+        // Compute totals
+        int[] totalScores = new int[Hearts.NUM_PLAYERS];
+        for (int[] scores : oldPlayerScores.values()) {
+            for (int playerID = 0; playerID < scores.length; ++playerID) {
+                totalScores[playerID] += scores[playerID];
             }
         }
 
-        oldPlayerScores.put(roundNumber, scoresClone);
+        // Check for game over
+        final OptionalInt maxScore = Arrays.stream(totalScores).max();
+        if (maxScore.isPresent() && maxScore.getAsInt() >= Hearts.END_SCORE) {
+            gameOver = true;
+        }
+
         return gameOver;
+    }
+
+    public int[] getFinalTotalScores()
+    {
+        int[] totalScores = new int[Hearts.NUM_PLAYERS];
+        for (int[] scores : oldPlayerScores.values()) {
+            for (int playerID = 0; playerID < scores.length; ++playerID) {
+                totalScores[playerID] += scores[playerID];
+            }
+        }
+        return totalScores;
     }
 
     private void dealCards()
