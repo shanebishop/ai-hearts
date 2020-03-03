@@ -1,9 +1,6 @@
 package game;
 
-import algorithms.CFRPlayer;
-import algorithms.DumbPlayer;
-import algorithms.GameID;
-import algorithms.GameInterface;
+import algorithms.*;
 import model.Card;
 import model.Model;
 import ui.View;
@@ -159,8 +156,8 @@ public class Hearts implements GameInterface<Card> {
                 toPlay = cfrPlayer.chooseCard(hand, isFirstTrick, heartsBroken, cardsPlayed, activePlayer);
                 break;
             case UCT_AI:
-                System.err.println("UCT AI not supported yet");
-                System.exit(1);
+                UCTAlgorithm<Card> uctAlgorithm = new UCTAlgorithm<>(this);
+                toPlay = uctAlgorithm.uct(getState());
                 break;
             default:
                 System.err.printf("Invalid PlayerType: %s\n", playerTypes[activePlayer]);

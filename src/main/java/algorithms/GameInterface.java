@@ -1,5 +1,7 @@
 package algorithms;
 
+import game.State;
+
 import java.util.List;
 
 /**
@@ -73,6 +75,14 @@ public interface GameInterface<S> {
      * @return List of possible moves for active player
      */
     List<S> moves();
+
+    /**
+     * Returns a state representing the current game state
+     * from the perspective of the current player
+     *
+     * @return Current game state
+     */
+    State getState();
 
     // ------------------------------------------------
     // All methods below are for debugging only
