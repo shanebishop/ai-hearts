@@ -31,6 +31,11 @@ public class CounterfactualRegretMinimizer<S> {
         initAggregateList(aggregateStrategies);
     }
 
+    public CounterfactualRegretMinimizer(int numPlayers)
+    {
+        this.numPlayers = numPlayers;
+    }
+
     private void initAggregateList(List<Map<GameID, List<Double>>> list)
     {
         for (int i = 0; i < numPlayers; ++i) {

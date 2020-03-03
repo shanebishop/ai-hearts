@@ -2,20 +2,13 @@ package training;
 
 import algorithms.CounterfactualRegretMinimizer;
 import game.Hearts;
-import game.PlayerType;
 import model.Card;
 
 public class LoadCFRTraining {
 
     public static void main(String[] args)
     {
-        Hearts game = new Hearts();
-        game.setAllPlayerTypes(PlayerType.CFR_AI);
-        game.setTraining(true);
-
-        final int maxTrainDepth = 100;
-
-        CounterfactualRegretMinimizer<Card> minimizer = new CounterfactualRegretMinimizer<>(game, maxTrainDepth);
+        CounterfactualRegretMinimizer<Card> minimizer = new CounterfactualRegretMinimizer<>(Hearts.NUM_PLAYERS);
 
         boolean loaded = minimizer.load("cfrtraining.txt");
         if (loaded) {

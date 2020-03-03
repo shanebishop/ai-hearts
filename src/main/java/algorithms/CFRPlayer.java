@@ -17,10 +17,9 @@ public class CFRPlayer {
     public CFRPlayer(Hearts game)
     {
         this.game = game;
-        rng = new Random();
+        this.rng = new Random();
 
-        final int maxTrainDepth = 100;
-        CounterfactualRegretMinimizer<Card> minimizer = new CounterfactualRegretMinimizer<>(new Hearts(), maxTrainDepth);
+        CounterfactualRegretMinimizer<Card> minimizer = new CounterfactualRegretMinimizer<>(Hearts.NUM_PLAYERS);
 
         boolean loaded = minimizer.load("cfrtraining.txt");
         if (!loaded) {
@@ -32,6 +31,7 @@ public class CFRPlayer {
     }
 
     // TODO CFR agent should likely take into account whether hearts has been broken or not
+    // Should probably only do this if I am able to do enough training
     public Card chooseCard(List<Card> hand, boolean isFirstTrick,
                                   boolean heartsBroken, Card[] cardsPlayed, int activePlayer)
     {
