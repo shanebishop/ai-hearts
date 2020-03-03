@@ -38,6 +38,8 @@ public class CounterfactualRegretMinimizer<S> {
         }
     }
 
+    public List<Map<GameID, List<Double>>> getStrategies() { return aggregateStrategies; }
+
     public void solve(String outputFilename, int itersPerSave, int itersPerUpdate, int maxIterations)
     {
         // Initialize training counters
@@ -60,20 +62,19 @@ public class CounterfactualRegretMinimizer<S> {
             }
         }
 
-        System.out.println("Reached mex iterations. Will now stop training.");
+        System.out.println("Reached max iterations. Will now stop training.");
     }
 
     private void train(int numIterations)
     {
-        // TODO Uncomment
-        //for (int i = 0; i < numIterations; ++i) {
+        for (int i = 0; i < numIterations; ++i) {
             GameInterface<S> copy = m_game.deepCopy();
             copy.beginGame();
 
             List<Double> probabilities = newList(numPlayers, 1.0);
 
             train(copy, probabilities);
-        //}
+        }
     }
 
     private List<Double> train(final GameInterface<S> game, final List<Double> probabilities)
@@ -321,10 +322,15 @@ public class CounterfactualRegretMinimizer<S> {
             while (!buffer.equalsIgnoreCase("end")) {
                 final int delim_index = buffer.indexOf('\t');
                 final String key = buffer.substring(0, delim_index);
-                final String[] tokens = key.split("\t");
+                final String afterKey = buffer.substring(delim_index+1);
+                //final String[] tokens = afterKey.split("\t");
+                final String[] tokens = afterKey.split(" ");
                 List<Double> value = new ArrayList<>();
 
                 for (String token : tokens) {
+                    if (token.isEmpty()) {
+                        continue; // Skip the initial empty string
+                    }
                     value.add(Double.parseDouble(token));
                 }
 

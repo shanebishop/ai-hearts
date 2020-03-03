@@ -14,6 +14,13 @@ public class State extends GameID {
     private Card[] played; // Cards played this trick
     private boolean isFirstTrick;
 
+    public State(List<Card> hand, Card[] played, boolean isFirstTrick)
+    {
+        this.hand = hand; // TODO Do I need to make deep copies of the incoming collections?
+        this.played = played;
+        this.isFirstTrick = isFirstTrick;
+    }
+
     // Instances of this class can only be created through public static methods
     private State()
     {

@@ -1,5 +1,6 @@
 package game;
 
+import algorithms.CFRPlayer;
 import algorithms.DumbPlayer;
 import algorithms.GameID;
 import algorithms.GameInterface;
@@ -22,12 +23,16 @@ public class Hearts implements GameInterface<Card> {
     private PlayerType[] playerTypes;
     private boolean training;
 
+    private CFRPlayer cfrPlayer; // Single CFRPlayer instance for all CFR processing
+
     public Hearts(View v)
     {
         this();
         view = v;
         view.setModel(model);
+
         training = false;
+        cfrPlayer = new CFRPlayer(this);
     }
 
     public Hearts()
@@ -38,8 +43,6 @@ public class Hearts implements GameInterface<Card> {
     private Hearts(Hearts other) {
         training = other.training;
         model = new Model(other.model);
-//        playerTypes = other.playerTypes == null
-//                ? null : Arrays.copyOf(other.playerTypes, other.playerTypes.length);
         playerTypes = Arrays.copyOf(other.playerTypes, other.playerTypes.length);
     }
 
@@ -144,6 +147,7 @@ public class Hearts implements GameInterface<Card> {
         final Card cardLed = model.getLedCard();
         final boolean isFirstTrick = model.isFirstTrick();
         final boolean heartsBroken = model.isHeartsBroken();
+        final Card[] cardsPlayed = model.getCardsPlayed();
 
         Card toPlay = null;
 
@@ -152,8 +156,7 @@ public class Hearts implements GameInterface<Card> {
                 toPlay = DumbPlayer.chooseCard(hand, cardLed, isFirstTrick, heartsBroken);
                 break;
             case CFR_AI:
-                System.err.println("CFR AI not supported yet");
-                System.exit(1);
+                toPlay = cfrPlayer.chooseCard(hand, isFirstTrick, heartsBroken, cardsPlayed, activePlayer);
                 break;
             case UCT_AI:
                 System.err.println("UCT AI not supported yet");

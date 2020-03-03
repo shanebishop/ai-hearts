@@ -86,16 +86,7 @@ public class Model {
     public boolean isGameOver() { return gameOver; }
     public int[] getCurrentScoresForThisRound() { return playerScores; }
     public int getTrickNumber() { return trickNumber; }
-
-    public List<Card> getP1Hand() { return p1Hand; }
-    public List<Card> getP2Hand() { return p2Hand; }
-    public List<Card> getP3Hand() { return p3Hand; }
-    public List<Card> getP4Hand() { return p4Hand; }
-
-    public int getP1HandSize() { return p1Hand.size(); }
-    public int getP2HandSize() { return p2Hand.size(); }
-    public int getP3HandSize() { return p3Hand.size(); }
-    public int getP4HandSize() { return p4Hand.size(); }
+    public Card[] getCardsPlayed() { return played; }
 
     public Card getCard(int handNum, int index)
     {
