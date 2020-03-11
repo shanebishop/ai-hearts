@@ -9,9 +9,13 @@ import java.util.Random;
 
 public class UCTAlgorithm<S> {
 
+    //private static final int MAX_TIME_MS = 3000;
+    private static final int MAX_TIME_MS = 400;
+
     private GameInterface<S> m_game;
     private Random rng;
     private int m_playerID;
+    private long startTime;
 
     public UCTAlgorithm(GameInterface<S> game) {
         m_game = game;
@@ -58,7 +62,9 @@ public class UCTAlgorithm<S> {
         // Create root node
         Node root = new Node(state, m_game.deepCopy(), null, null);
 
-        while (timer.timeRemaining()) {
+        startTime = System.currentTimeMillis();
+
+        while (timeRemaining(startTime)) {
             // Select a node to expand
             Node selectedNode = treePolicy(root);
 
@@ -69,8 +75,21 @@ public class UCTAlgorithm<S> {
             backPropagate(selectedNode, reward);
         }
 
+        // TODO Temp
+        List<Node> children = root.getChildren();
+        if (children.isEmpty()) {
+            System.err.println("Root has no children");
+            return null;
+        }
+
         // Return best known action from the root
         return bestAction(root).move();
+    }
+
+    private boolean timeRemaining(long startTime)
+    {
+        //System.out.printf("In timeRemaining after %d ms\n", System.currentTimeMillis() - startTime);
+        return System.currentTimeMillis() - startTime <= MAX_TIME_MS;
     }
 
     // Defines the tree policy for MCTS
@@ -79,9 +98,10 @@ public class UCTAlgorithm<S> {
     {
         GameInterface<S> gameCopy = node.game().deepCopy();
 
-        while (!node.isGameOver()) {
+        //while (!node.isGameOver()) {
+        while (!node.isGameOver() && timeRemaining(startTime)) {
             // Find all available moves
-            final List<S> availableMoves = gameCopy.moves();
+            final List<S> availableMoves = new ArrayList<>(gameCopy.moves());
 
             if (!availableMoves.isEmpty()) {
 
@@ -110,7 +130,15 @@ public class UCTAlgorithm<S> {
     // Remove and return a random item from a list
     private <T> T removeRandomItem(List<T> list)
     {
-        return list.remove(rng.nextInt(list.size()));
+        if (list.size() == 1) {
+            return list.remove(0);
+        }
+
+        //System.out.printf("Size: %d\n", list.size());
+        final int ind = rng.nextInt(list.size());
+        //System.out.printf("Index: %d, size: %d\n", ind, list.size());
+        return list.remove(ind);
+        //return list.remove(rng.nextInt(list.size()));
     }
 
     // Play game from given node, making random moves, and return
@@ -118,26 +146,41 @@ public class UCTAlgorithm<S> {
     private int rollout(Node node)
     {
         GameInterface<S> gameCopy = node.game();
+        boolean roundOver;
 
-        while (!gameCopy.isGameOver()) {
+        while (!gameCopy.isGameOver() && timeRemaining(startTime)) {
             // Find all available moves
-            List<S> moves = gameCopy.moves();
+            List<S> moves = new ArrayList<>(gameCopy.moves());
+
+//            if (moves.isEmpty()) {
+//                gameCopy.nextRound();
+//                continue;
+//            }
+
+            // TODO What do I do if no available moves?
 
             // Choose a random move to make
             S move = removeRandomItem(moves);
 
             // Make the move
             gameCopy = gameCopy.deepCopy();
-            gameCopy.makeMove(move);
+            roundOver = gameCopy.makeMove(move);
+
+            if (roundOver) {
+                break;
+            }
         }
 
+        List<Integer> winningPlayers = gameCopy.winningPlayers();
+
         // Determine reward
-        if (gameCopy.onlyWinner(m_playerID)) {
-            return 1;
-        } else if (gameCopy.lost(m_playerID)) {
-            return 0;
+        if (winningPlayers.contains(m_playerID)) {
+            if (winningPlayers.size() == 1) {
+                return 1; // Player is only winner
+            }
+            return -1; // Player tied for winner - TODO Is it correct to return -1 if player tied?
         }
-        return -1;
+        return 0; // Player lost
     }
 
     // Back propagate rewards back up the tree
@@ -162,6 +205,11 @@ public class UCTAlgorithm<S> {
 //        }
 
 //        int totalRollouts = node.numVisits();
+
+        if (children.isEmpty()) {
+            System.err.printf("Node %s has no children\n", node);
+            return null;
+        }
 
         // TODO Should this maybe be node.state().playerID() instead?
         int playerID = m_game.activePlayer();

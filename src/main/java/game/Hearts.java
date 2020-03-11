@@ -19,6 +19,7 @@ public class Hearts implements GameInterface<Card> {
 
     private PlayerType[] playerTypes;
     private boolean training;
+    private boolean runningAITurn;
 
     private CFRPlayer cfrPlayer; // Single CFRPlayer instance for all CFR processing
 
@@ -37,8 +38,10 @@ public class Hearts implements GameInterface<Card> {
         model = new Model();
     }
 
-    private Hearts(Hearts other) {
+    private Hearts(Hearts other, boolean runningAITurn) {
+        view = other.view;
         training = other.training;
+        this.runningAITurn = other.runningAITurn || runningAITurn;
         model = new Model(other.model);
         playerTypes = Arrays.copyOf(other.playerTypes, other.playerTypes.length);
     }
@@ -113,19 +116,34 @@ public class Hearts implements GameInterface<Card> {
         view.update();
     }
 
-    // Method called for both a human or an AI player playing a card
-    private void playCard(int playerID, Card toPlay)
+    /**
+     * Method called for both a human or an AI player playing a card
+     *
+     * @return true if round over, else false
+     */
+    private boolean playCard(int playerID, Card toPlay)
     {
+        boolean roundOver = false;
+
         model.setPlayed(playerID, toPlay);
+
+//        if (view != null && !runningAITurn) {
+//            view.update();
+//        }
 
         if (!model.isTrickOver()) {
             // Do not move to next player if the trick is over
             advancePlayer();
         }
 
-        if (model.isTrickOver() && training) {
-            finalizeTrick();
+        // Must only finalize trick when training or running an AI planning
+        // This is because the user must finalize a trick by clicking the
+        // center pane when they are ready
+        if (model.isTrickOver() && (training || runningAITurn)) {
+            roundOver = finalizeTrick();
         }
+
+        return roundOver;
     }
 
     private void advancePlayer()
@@ -184,12 +202,14 @@ public class Hearts implements GameInterface<Card> {
     // If a human clicks in the center after all AI players are done, then we are free to finalize trick,
     // because the trick is over
     // Therefore, the only guard we need for execution is model.isTrickOver()
-    private void finalizeTrick()
+    private boolean finalizeTrick()
     {
-        if (model.isTrickOver()) {
-            boolean roundOver = model.endTrick(); // Ends trick, and sets active player appropriately
+        boolean roundOver = false;
 
-            if (roundOver && !training) {
+        if (model.isTrickOver()) {
+            roundOver = model.endTrick(); // Ends trick, and sets active player appropriately
+
+            if (roundOver && !training && !runningAITurn && view != null) {
                 view.showScoreDialog();
             }
 
@@ -199,10 +219,12 @@ public class Hearts implements GameInterface<Card> {
 
             // Do we still call view.update() immediately if the round is over?
             // TODO If round is over, and a player has a score >= 100, game is over - need to handle this state as well
-            if (!training) {
+            if (view != null) {
                 view.update();
             }
         }
+
+        return roundOver;
     }
 
     private boolean isAIPlayer(int playerID) { return playerTypes[playerID] != PlayerType.HUMAN; }
@@ -253,9 +275,9 @@ public class Hearts implements GameInterface<Card> {
     }
 
     @Override
-    public void makeMove(Card move)
+    public boolean makeMove(Card move)
     {
-        playCard(model.getActivePlayer(), move);
+        return playCard(model.getActivePlayer(), move);
     }
 
     @Override
@@ -280,7 +302,8 @@ public class Hearts implements GameInterface<Card> {
     @Override
     public GameInterface<Card> deepCopy()
     {
-        return new Hearts(this);
+        final boolean runningAITurn = true;
+        return new Hearts(this, runningAITurn);
     }
 
     @Override
@@ -326,6 +349,16 @@ public class Hearts implements GameInterface<Card> {
         }
 
         return playable;
+    }
+
+    @Override
+    public State getState() {
+        return State.fromModel(model, activePlayer());
+    }
+
+    @Override
+    public List<Integer> winningPlayers() {
+        return model.winningPlayers();
     }
 
     private boolean canPlay(Card c) {

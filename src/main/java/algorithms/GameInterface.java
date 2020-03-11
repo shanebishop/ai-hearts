@@ -21,8 +21,9 @@ public interface GameInterface<S> {
      * Make the active player make a move
      *
      * @param move The move
+     * @return true if round is over, else false
      */
-    void makeMove(S move);
+    boolean makeMove(S move);
 
     /**
      * Computes payout of a completed game
@@ -83,6 +84,16 @@ public interface GameInterface<S> {
      * @return Current game state
      */
     State getState();
+
+    /**
+     * @return List of indices of winning players
+     */
+    List<Integer> winningPlayers();
+
+    /**
+     * Move game to next round
+     */
+    //void nextRound();
 
     // ------------------------------------------------
     // All methods below are for debugging only

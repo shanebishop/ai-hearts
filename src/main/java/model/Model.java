@@ -19,6 +19,7 @@ public class Model {
     private Card led; // The card that was led to start the trick
 
     private boolean gameOver;
+    private List<Integer> winners;
 
     public Model()
     {
@@ -87,6 +88,7 @@ public class Model {
     public int[] getCurrentScoresForThisRound() { return playerScores; }
     public int getTrickNumber() { return trickNumber; }
     public Card[] getCardsPlayed() { return played; }
+    public List<Integer> winners() { return winners; }
 
     public Card getCard(int handNum, int index)
     {
@@ -111,6 +113,20 @@ public class Model {
         return index < hands.get(playerID).size();
     }
 
+    public List<Integer> winningPlayers()
+    {
+        int[] scores = getTotalScores();
+        final int minScore = Arrays.stream(scores).min().getAsInt();
+        List<Integer> winningPlayers = new ArrayList<>();
+
+        for (int i = 0; i < scores.length; ++i) {
+            if (scores[i] == minScore) {
+                winningPlayers.add(i);
+            }
+        }
+        return winningPlayers;
+    }
+
     public int[] getTotalScores()
     {
         // Start from the current score of this round
@@ -132,7 +148,7 @@ public class Model {
     {
         if (!heartsBroken) {
             heartsBroken = true;
-            System.out.println("Hearts broken!");
+            //System.out.println("Hearts broken!");
         }
     }
 
@@ -292,6 +308,14 @@ public class Model {
         final OptionalInt maxScore = Arrays.stream(totalScores).max();
         if (maxScore.isPresent() && maxScore.getAsInt() >= Hearts.END_SCORE) {
             gameOver = true;
+            final int minScore = Arrays.stream(totalScores).min().getAsInt();
+
+            winners = new ArrayList<>();
+            for (int playerID = 0; playerID < totalScores.length; ++playerID) {
+                if (totalScores[playerID] == minScore) {
+                    winners.add(playerID);
+                }
+            }
         }
 
         return gameOver;
