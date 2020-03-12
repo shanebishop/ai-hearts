@@ -194,22 +194,6 @@ public class CounterfactualRegretMinimizer<S> {
     {
         // Write probabilities to file
         out.println("Probabilities");
-//        for (int player = 0; player < numPlayers; ++player) {
-//            Map<String, List<Double>> map = aggregateStrategies.get(player);
-//            out.printf("Player: %d\n", player);
-//
-//            for (String id : map.keySet()) {
-//                final List<Double> strat = map.get(id);
-//                final double total = sum(strat);
-//
-//                out.printf("%s\t", id);
-//                for (double value : strat) {
-//                    out.printf(" %f", value / total);
-//                }
-//                out.println();
-//            }
-//            out.println("END");
-//        }
         saveData(out, aggregateStrategies, true);
 
         // Write raw data for aggregate strategies to file
@@ -245,20 +229,6 @@ public class CounterfactualRegretMinimizer<S> {
             out.println("END");
         }
     }
-
-//    private double lambda(PrintWriter out, List<Double> list, String id, boolean divByTotal) {
-//        final double total = sum(list);
-//
-//        out.printf("%s\t", id);
-//        for (double value : list) {
-//            if (divByTotal) {
-//                out.printf(" %f", value / total);
-//            } else {
-//                out.printf(" %f", value);
-//            }
-//        }
-//        out.println();
-//    }
 
     public boolean load(String filename)
     {

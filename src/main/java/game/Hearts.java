@@ -179,7 +179,6 @@ public class Hearts implements GameInterface<Card> {
                 toPlay = cfrPlayer.chooseCard(hand, isFirstTrick, heartsBroken, cardsPlayed, activePlayer);
                 break;
             case UCT_AI:
-                //System.out.printf("Finding card to play for UCT player %d\n", activePlayer+1);
                 UCTAlgorithm<Card> uctAlgorithm = new UCTAlgorithm<>(this);
                 toPlay = uctAlgorithm.uct(getState());
                 break;
