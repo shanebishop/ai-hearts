@@ -43,6 +43,7 @@ public class Hearts implements GameInterface<Card> {
         training = other.training;
         this.runningAITurn = other.runningAITurn || runningAITurn;
         model = new Model(other.model);
+        model.setRunningAITurn(this.runningAITurn);
         playerTypes = Arrays.copyOf(other.playerTypes, other.playerTypes.length);
     }
 
@@ -149,7 +150,7 @@ public class Hearts implements GameInterface<Card> {
     private void advancePlayer()
     {
         final int activePlayer = model.nextPlayer();
-        if (isAIPlayer(activePlayer) && !training) {
+        if (isAIPlayer(activePlayer) && !training && !runningAITurn) {
             // Active player is an AI player
             handleAIPlayerTurn();
         }
@@ -157,6 +158,10 @@ public class Hearts implements GameInterface<Card> {
 
     private void handleAIPlayerTurn()
     {
+        if (runningAITurn) {
+            return; // Do not run an AI turn if currently running an AI turn
+        }
+
         final int activePlayer = model.getActivePlayer();
         final List<Card> hand = model.getHand(activePlayer);
         final Card cardLed = model.getLedCard();
@@ -174,6 +179,7 @@ public class Hearts implements GameInterface<Card> {
                 toPlay = cfrPlayer.chooseCard(hand, isFirstTrick, heartsBroken, cardsPlayed, activePlayer);
                 break;
             case UCT_AI:
+                //System.out.printf("Finding card to play for UCT player %d\n", activePlayer+1);
                 UCTAlgorithm<Card> uctAlgorithm = new UCTAlgorithm<>(this);
                 toPlay = uctAlgorithm.uct(getState());
                 break;

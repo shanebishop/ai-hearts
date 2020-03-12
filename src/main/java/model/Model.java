@@ -18,7 +18,7 @@ public class Model {
     private Card[] played; // Cards played this trick
     private Card led; // The card that was led to start the trick
 
-    private boolean gameOver;
+    private boolean gameOver, runningAITurn;
     private List<Integer> winners;
 
     public Model()
@@ -89,6 +89,7 @@ public class Model {
     public int getTrickNumber() { return trickNumber; }
     public Card[] getCardsPlayed() { return played; }
     public List<Integer> winners() { return winners; }
+    public void setRunningAITurn(boolean b) { runningAITurn = b; }
 
     public Card getCard(int handNum, int index)
     {
@@ -148,7 +149,7 @@ public class Model {
     {
         if (!heartsBroken) {
             heartsBroken = true;
-            //System.out.println("Hearts broken!");
+            if (!runningAITurn) System.out.println("Hearts broken!");
         }
     }
 
@@ -256,10 +257,11 @@ public class Model {
 
         playerScores[playerID] += score;
 
-        // TODO Uncomment me
-//        System.out.printf("Player %d won trick %d, earning %d point%s. ",
-//                playerID+1, trickNumber, score, score == 1 ? "" : "s");
-//        System.out.printf("Player %d's score is now %d.\n", playerID+1, playerScores[playerID]);
+        if (!runningAITurn) {
+            System.out.printf("Player %d won trick %d, earning %d point%s. ",
+                    playerID+1, trickNumber, score, score == 1 ? "" : "s");
+            System.out.printf("Player %d's score is now %d.\n", playerID+1, playerScores[playerID]);
+        }
     }
 
     private int determineTrickWinner()
