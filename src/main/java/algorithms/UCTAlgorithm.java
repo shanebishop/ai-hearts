@@ -9,7 +9,6 @@ import java.util.Random;
 
 public class UCTAlgorithm<S> {
 
-    //private static final int MAX_TIME_MS = 3000;
     private static final int MAX_TIME_MS = 400;
 
     private GameInterface<S> m_game;
@@ -75,20 +74,12 @@ public class UCTAlgorithm<S> {
             backPropagate(selectedNode, reward);
         }
 
-        // TODO Temp
-        List<Node> children = root.getChildren();
-        if (children.isEmpty()) {
-            System.err.println("Root has no children");
-            return null;
-        }
-
         // Return best known action from the root
         return bestAction(root).move();
     }
 
     private boolean timeRemaining(long startTime)
     {
-        //System.out.printf("In timeRemaining after %d ms\n", System.currentTimeMillis() - startTime);
         return System.currentTimeMillis() - startTime <= MAX_TIME_MS;
     }
 
@@ -98,7 +89,6 @@ public class UCTAlgorithm<S> {
     {
         GameInterface<S> gameCopy = node.game().deepCopy();
 
-        //while (!node.isGameOver()) {
         while (!node.isGameOver() && timeRemaining(startTime)) {
             // Find all available moves
             final List<S> availableMoves = new ArrayList<>(gameCopy.moves());
@@ -134,11 +124,8 @@ public class UCTAlgorithm<S> {
             return list.remove(0);
         }
 
-        //System.out.printf("Size: %d\n", list.size());
         final int ind = rng.nextInt(list.size());
-        //System.out.printf("Index: %d, size: %d\n", ind, list.size());
         return list.remove(ind);
-        //return list.remove(rng.nextInt(list.size()));
     }
 
     // Play game from given node, making random moves, and return
@@ -197,21 +184,11 @@ public class UCTAlgorithm<S> {
     {
         List<Node> children = node.getChildren();
 
-//        List<Integer> visits = new ArrayList<>();
-//        List<List<Double>> rewards = new ArrayList<>();
-//        for (Node child : children) {
-//            visits.add(child.numVisits());
-//            rewards.add(child.getRewards());
-//        }
-
-//        int totalRollouts = node.numVisits();
-
         if (children.isEmpty()) {
             System.err.printf("Node %s has no children\n", node);
             return null;
         }
 
-        // TODO Should this maybe be node.state().playerID() instead?
         int playerID = m_game.activePlayer();
 
         // Calculate UCB value for all child nodes
