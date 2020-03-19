@@ -12,11 +12,11 @@
     <artifactId>hearts</artifactId>
     <version>v1.0</version>
 
-    <!-- Must set the source and target like this, otherwise
-         JUnit will be imported for Java source version 7 -->
     <build>
         <plugins>
 
+            <!-- Must set the source and target like this, otherwise
+                 JUnit will be imported for Java source version 7 -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
@@ -28,6 +28,7 @@
             </plugin>
 
             <!-- Build an executable JAR -->
+            <!-- To build the JAR, run "mvn package" on the command line -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-jar-plugin</artifactId>
