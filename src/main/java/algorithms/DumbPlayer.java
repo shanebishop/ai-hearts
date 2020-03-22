@@ -68,7 +68,7 @@ public class DumbPlayer {
 
     private static boolean isQueenOfSpades(Card c)
     {
-        return c.getSuit() == Card.SPADE_SUITE && c.getValue() == Card.QUEEN_VAL;
+        return c.getSuit() == Card.SPADE_SUIT && c.getValue() == Card.QUEEN_VAL;
     }
 
 }

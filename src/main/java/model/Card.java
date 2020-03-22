@@ -2,7 +2,7 @@ package model;
 
 public class Card implements Comparable<Card> {
 
-    public static final int CLUB_SUIT = 0, DIAMOND_SUIT = 1, HEART_SUIT = 2, SPADE_SUITE = 3;
+    public static final int CLUB_SUIT = 0, DIAMOND_SUIT = 1, HEART_SUIT = 2, SPADE_SUIT = 3;
     public static final int JACK_VAL = 11, QUEEN_VAL = 12, KING_VAL = 13, ACE_VAL = 14;
 
     private int suit, value;
@@ -24,13 +24,13 @@ public class Card implements Comparable<Card> {
 
     public boolean isPointsCard()
     {
-        return suit == HEART_SUIT || (value == QUEEN_VAL && suit == SPADE_SUITE);
+        return suit == HEART_SUIT || (value == QUEEN_VAL && suit == SPADE_SUIT);
     }
 
     @Override
     public int hashCode()
     {
-        return suit * 13 + value; // 13 values per suit
+        return suit * ACE_VAL + value; // Ace is largest value
     }
 
     @Override
@@ -52,7 +52,7 @@ public class Card implements Comparable<Card> {
             case CLUB_SUIT: suitStr = "C"; break;
             case DIAMOND_SUIT: suitStr = "D"; break;
             case HEART_SUIT: suitStr = "H"; break;
-            case SPADE_SUITE: suitStr = "S"; break;
+            case SPADE_SUIT: suitStr = "S"; break;
             default: suitStr = null; break;
         }
 
@@ -82,7 +82,7 @@ public class Card implements Comparable<Card> {
             case 'C': suit = CLUB_SUIT; break;
             case 'D': suit = DIAMOND_SUIT; break;
             case 'H': suit = HEART_SUIT; break;
-            case 'S': suit = SPADE_SUITE; break;
+            case 'S': suit = SPADE_SUIT; break;
             default: return null;
         }
 

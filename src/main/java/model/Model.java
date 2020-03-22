@@ -250,7 +250,7 @@ public class Model {
         for (Card c : played) {
             if (c.getSuit() == Card.HEART_SUIT) {
                 ++score;
-            } else if (c.getValue() == Card.QUEEN_VAL && c.getSuit() == Card.SPADE_SUITE) {
+            } else if (c.getValue() == Card.QUEEN_VAL && c.getSuit() == Card.SPADE_SUIT) {
                 score += Hearts.QUEEN_OF_SPADES_SCORE;
             }
         }
@@ -266,12 +266,12 @@ public class Model {
 
     private int determineTrickWinner()
     {
-        final int ledSuite = led.getSuit();
+        final int ledSuit = led.getSuit();
         int maxVal = 0, trickWinner = 0;
 
         for (int i = 0; i < played.length; ++i) {
             final Card c = played[i];
-            final int val = c.getSuit() == ledSuite ? c.getValue() : 0;
+            final int val = c.getSuit() == ledSuit ? c.getValue() : 0;
 
             if (val > maxVal) {
                 maxVal = val;
@@ -347,8 +347,8 @@ public class Model {
         final int numCards = numPlayers * Hearts.CARDS_PER_PLAYER;
 
         List<Card> allCards = new ArrayList<>(numCards);
-        for (int val = 2; val <= Hearts.CARDS_PER_PLAYER+1; ++val) {  // Values start at 2
-            for (int s = 0; s < numPlayers; ++s) {                    // Suites start at 0
+        for (int val = 2; val <= Card.ACE_VAL; ++val) { // Values are from 2 to ACE_VAL (14)
+            for (int s = 0; s < numPlayers; ++s) {      // Suits start at 0
                 allCards.add(new Card(s, val));
             }
         }

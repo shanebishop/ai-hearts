@@ -108,7 +108,7 @@ public class Hearts implements GameInterface<Card> {
                 // Trying to play a Heart, but cannot play a Heart
                 return;
             }
-        } else if (isFirstTrick && tryingToPlay.getSuit() == Card.SPADE_SUITE && tryingToPlay.getValue() == Card.QUEEN_VAL) {
+        } else if (isFirstTrick && tryingToPlay.getSuit() == Card.SPADE_SUIT && tryingToPlay.getValue() == Card.QUEEN_VAL) {
             // Cannot play points card (i.e., Queen of Spades) on first trick
             return;
         }
